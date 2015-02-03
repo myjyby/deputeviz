@@ -1,0 +1,103 @@
+.dropdown-submenu{
+	position:relative;
+}
+
+.dropdown-submenu>.dropdown-menu{
+	top:0 !important;
+	left:100% !important;
+	margin-top:-2px !important;
+	/*margin-left:-1px !important;*/
+	-webkit-border-radius:0 6px 6px 6px;
+	-moz-border-radius:0 6px 6px 6px;
+	border-radius:0 6px 6px 6px;
+}
+
+.dropdown-submenu>.dropdown-menu.dropdown-menu-right{
+	top:0 !important;
+	right:100% !important;
+	left:inherit !important;
+	margin-top:-2px !important;
+	/*margin-left:-1px !important;*/
+	-webkit-border-radius:6px 0px 6px 6px;
+	-moz-border-radius:6px 0px 6px 6px;
+	border-radius:6px 0px 6px 6px;
+}
+
+.dropdown-submenu.dropup>.dropdown-menu{
+	top:auto !important;
+	bottom:100% !important;
+	margin-bottom:-31px !important;
+	/*margin-left:-1px !important;*/
+	-webkit-border-radius:6px 6px 6px 0px;
+	-moz-border-radius:6px 6px 6px 0px;
+	border-radius:6px 6px 6px 0px;
+}
+
+.dropdown-submenu.dropup>.dropdown-menu.dropdown-menu-right{
+	top:auto !important;
+	bottom:100% !important;
+	margin-bottom:-31px !important;
+	/*margin-left:-1px !important;*/
+	-webkit-border-radius:6px 6px 0px 6px;
+	-moz-border-radius:6px 6px 0px 6px;
+	border-radius:6px 6px 0px 6px;
+}
+
+.dropdown-submenu:hover>.dropdown-menu{
+	display:block;
+}
+
+.dropdown-submenu>a:after{
+	display:block;
+	content:" ";
+	float:right;
+	width:0;
+	height:0;
+	border-color:transparent;
+	border-style:solid;
+	border-width:5px 0 5px 5px;
+	border-left-color:#cccccc;
+	margin-top:5px;
+	margin-right:-10px;
+}
+
+.dropdown-submenu>a.submenu-right:after{
+	display:block;
+	content:" ";
+	float:left;
+	width:0;
+	height:0;
+	border-color:transparent;
+	border-style:solid;
+	border-width:5px 5px 5px 0px;
+	border-right-color:#cccccc;
+	margin-top:5px;
+	margin-right:10px;
+}
+
+.dropdown-submenu:hover>a:after{
+	/*border-left-color:#ffffff;*/
+}
+
+.dropdown-submenu.pull-left{
+	float:none;
+}
+
+.dropdown-submenu.pull-left>.dropdown-menu{
+	left:-100% !important;
+	margin-left:10px !important;
+	-webkit-border-radius:6px 0 6px 6px;
+	-moz-border-radius:6px 0 6px 6px;
+	border-radius:6px 0 6px 6px;
+}
+
+
+.dropdown-submenu.selected>a:after{
+	border-left-color:#333 !important;
+}
+.dropdown-submenu.selected>a.submenu-right:after{
+	border-right-color: #333 !important;
+}
+.large-submenu{
+	min-width: 225px;
+}

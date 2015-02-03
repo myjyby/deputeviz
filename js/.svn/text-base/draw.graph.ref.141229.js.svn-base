@@ -1,0 +1,1768 @@
+// ------------------------------------------------------------------------- //
+// PUBLIC VARIABLES -------------------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// DETERMINE GENERIC NODE SIZE
+// AND PADDING TO RESPECT WHEN BUNDELING
+// THE NODE BALLS 
+var _node_size=7.5,
+	padding=2;
+// SET SCALE RANGE FOR NOES 
+// (APPLIES WHEN A SPECIFIC SCALE IS SELECTED BY THE USER)
+var _scale=d3.scale.linear()
+	.domain(d3.extent(_recettes_totales_recettes_millions))
+	.range([1,_node_size]);
+// DETERMINE SVG FEATURES
+var f_width=1110, 
+	f_height=600,
+	f_padding=39,
+	width=f_width - f_padding,
+	height=f_height - f_padding,
+	shiftKey;
+// DETERMINE THE PROJECTION FOR THE MAP
+var projection=d3.geo.mercator()
+    .center([3,46.5])
+    .scale(2250)
+    .translate([width/2, height/2]);
+var path=d3.geo.path()
+    .projection(projection);
+// DETERMINE A FORCE LAYOUT
+var force=d3.layout.force();
+// DETERMINE THE DRAGGING SCALE
+// AND RANGE FOR THE SCALE SLIDER AND
+// CHECK FOR USER DRAG (NOT AUTOMATIC ON VIEW CHANGE)
+// OF THE SCALE SLIDER
+var _drag = d3.behavior.drag()
+		.origin(0)
+		.on("dragstart",dragstart)
+		.on("drag",dragmove)
+		.on("dragend",dragend),
+	_slider_thumb_min_width = 5,
+	_slider_thumb_max_width = 20,
+	_slider_thumb_scale = d3.scale.linear()
+		.range([_slider_thumb_min_width,_slider_thumb_max_width]),
+	_scale_thumb_drag=false;
+// DETERMINE SCATTERPLOT FEATURES
+var _scatter_p=50,
+	_scatter_w=f_width-_scatter_p * 2,
+	_scatter_h=height-_scatter_p,
+	_scatter_x = d3.scale.linear()
+    	.range([_scatter_p, _scatter_w]),
+	_scatter_y = d3.scale.linear()
+    	.range([_scatter_h, 0]),
+	_xAxis = d3.svg.axis()
+    	.scale(_scatter_x)
+    	.orient("bottom"),
+	_yAxis = d3.svg.axis()
+    	.scale(_scatter_y)
+    	.orient("left");
+// DETERMINE ALL DEPARTEMENTS IN FRANCE METROPOLITAINE
+var _dep_metropole = ["Ain","Aisne","Allier","Alpes-de-Haute-Provence","Hautes-Alpes","Alpes-Maritimes","Ardèche","Ardennes","Ariège","Aube","Aude","Aveyron","Bouches-du-Rhône","Calvados","Cantal","Charente","Charente-Maritime","Cher","Corrèze","Côte-d’Or","Côtes-d’Armor","Creuse","Dordogne","Doubs","Drôme","Eure","Eure-et-Loir","Finistère","Corse-du-Sud","Haute-Corse","Gard","Haute-Garonne","Gers","Gironde","Hérault","Ille-et-Vilaine","Indre","Indre-et-Loire","Isère","Jura","Landes","Loir-et-Cher","Loire","Haute-Loire","Loire-Atlantique","Loiret","Lot","Lot-et-Garonne","Lozère","Maine-et-Loire","Manche","Marne","Haute-Marne","Mayenne","Meurthe-et-Moselle","Meuse","Morbihan","Moselle","Nièvre","Nord","Oise","Orne","Pas-de-Calais","Puy-de-Dôme","Pyrénées-Atlantiques","Hautes-Pyrénées","Pyrénées-Orientales","Bas-Rhin","Haut-Rhin","Rhône","Haute-Saône","Saône-et-Loire","Sarthe","Savoie","Haute-Savoie","Paris","Seine-Maritime","Seine-et-Marne","Yvelines","Deux-Sèvres","Somme","Tarn","Tarn-et-Garonne","Var","Vaucluse","Vendée","Vienne","Haute-Vienne","Vosges","Yonne","Territoire-de-Belfort","Essonne","Hauts-de-Seine","Seine-Saint-Denis","Val-de-Marne","Val-d’Oise"];
+
+// ------------------------------------------------------------------------- //
+// GENERIC FUNCTIONS ------------------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// MOVE TO DOM-NODE TO FRONT
+d3.selection.prototype.moveToFront=function(){
+	return this.each(function(){this.parentNode.appendChild(this);});
+};
+
+d3.selection.prototype.hide=function(){
+	return this.each(function(){d3.select(this).classed("hide",true);});
+};
+d3.selection.prototype.show=function(){
+	return this.each(function(){d3.select(this).classed("hide",false);});
+};
+
+function stripStr(str){
+	return str.toLowerCase().replace(/[`’~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
+};
+
+function toClassStr(str){
+	return str.replace('M. ', '').replace('Mme. ', '').toLowerCase().replace(/[`’~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '').replace(/\s+/g, '');;	
+};
+
+// ------------------------------------------------------------------------- //
+// RETRIEVE VALUES FUNCTIONS ----------------------------------------------- //
+// ------------------------------------------------------------------------- //
+function getSCALES(){
+	var vindicator=$(".scale.selected").data("d"),
+		sdata=$(".scale.selected").data("sd"),
+		ssdata=$(".scale.selected").data("ssd");
+	return [_global_data,vindicator,sdata,ssdata];
+};
+
+function getCOLORS(){
+	var vindicator=d3.select(".color.selected").attr("id").toLowerCase();
+	return vindicator;
+};
+
+function getVIEW(){
+	var active_view=d3.select(".cat.selected").attr("id");
+	return active_view;
+};
+
+function getSCRUTIN(){
+	var active_scrutin=d3.select(".scrutin-opt.selected").datum(),
+		active_scrutin_id=active_scrutin.scrutin_id;
+	return active_scrutin_id;
+};
+
+function keyflip() {
+  shiftKey=d3.event.shiftKey||d3.event.metaKey;
+  return;
+};
+
+// ------------------------------------------------------------------------- //
+// BACKGROUND DRAWING FUNCTIONS -------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// DRAW THE SVG CONATINER THAT WILL CONTAIN 
+// ALL THE GRAPHICAL ELEMENTS
+function drawSVG(){
+	// SET A LISTENER ON THE BODY LEVEL FOR SHIFT KEY DOWN
+	// TO MAKE MULTIPLE SELECTIONS AND
+	// ADD AN SVG CONTAINER TO THE #canvas DIV
+	var svg = d3.select("body")
+		.attr("tabindex",1)
+		.on("keydown.brush",keyflip)
+		.on("keyup.brush",keyflip)
+		.select("#canvas")
+		.append("svg")
+		.attr("width",f_width)
+		.attr("height",f_height);
+	// ADD THE MAIN GROUP (WHERE ALL OTHER GROUPS GO)
+	// AND FIRST ADD THE NODES GROUP TO IT (USED TO BE .bubbles)
+	var main_group = svg.append("g")
+		.attr("class","main-group")
+		.attr("transform","translate("+[0,f_padding]+")");
+	main_group.append("g")
+		.attr("class","nodes");
+	// ADD DATA ORIGIN NOTE AT THE BOTTOM
+	main_group.insert("foreignObject",".nodes")
+		.attr("width",f_width)
+		.attr("height",22)
+		.attr("x",0)
+		.attr("y",f_height-f_padding/2)
+		.attr("transform","translate("+[0,-f_padding]+")")
+	.append("xhtml:body")
+		.attr("class","f-obj-body text-center noselect")
+		.html("<small>Toutes les données (sauf contre-indication) proviennent du site de <a href='http://www.assemblee-nationale.fr/qui/xml/liste_alpha.asp?legislature=14' target='_blank'>l’Assemblée Nationale.</a></small>");
+	return;
+};
+// DRAW THE HEMISPHERE BACKGROUND
+function drawHEMICYCLE(num){
+	// ADD A GROUP FOR THE HEMISPHERE DRAWING 
+	// BELOW THE DEPUTE NODES
+	var svg = d3.select(".main-group")
+			.insert("g",".nodes")
+			.attr("class","hemicycle")
+			.attr("transform","translate(" + [120,-f_padding] + ")");
+	// DRAW THE HEMICYCLE BASED ON THE DATA
+	// IN /img/hemicycle.data.js
+	/*var sieges = svg.selectAll("sieges")
+			.data(hemicycle);
+	sieges.enter()
+		.append("path")
+		.attr("class","map-borders")
+		.attr("d",function(d){return d;});*/
+	svg.html(function(){
+		var sieges=d3.select("#hemicycle-svg").html();
+		d3.select("#hemicycle-svg").remove();
+		return sieges;
+	});
+	/*var sieges_pos=new Array();
+	svg.selectAll(".siege")
+		.each(function(d){
+			var siege_num=d3.select(this.parentNode).attr("xlink:title"),
+				bbox=d3.select(this).node().getBBox(),
+				x=bbox.x,
+				y=bbox.y,
+				width=bbox.width,
+				height=bbox.height;
+			if(siege_num.indexOf("place n")!==-1){
+				siege_num=siege_num.split(" ")[2];
+				sieges_pos.push({id:siege_num,x:x+width/2,y:y+height/2})
+			}
+		});
+	console.log(sieges_pos)*/
+	// ADD AN ANNOTATION MENTIONNING
+	// THERE ARE 577 DEPUTES
+	svg.append("text")
+		.attr("x",f_width/2-132)
+		.attr("y",height-f_padding)
+		.attr("class","svg-title noselect")
+		.attr("text-anchor","middle")
+		.text(num);
+	svg.append("text")
+		.attr("x",f_width/2-132)
+		.attr("y",height-f_padding*1/8)
+		.attr("class","svg-sub-title noselect")
+		.attr("text-anchor","middle")
+		.text("députés");
+	return;
+};
+// DRAW THE MAP BACKGROUND
+function drawMAP(){
+	// ADD A GROUP FOR THE MAP CONTOURS
+	// BELOW THE DEPUTE NODES AND SET IT
+	// TO DISPLAY NONE, SINCE IT IS NOT
+	// IN THE FIRST VIEW (THIS MAY CHANGE
+	// IF WE GIVE QUESTION/ANSWER AUTHORS
+	// THE OPPORTUNITY TO MARK THE STATE 
+	// OF THEIR VISUALIZATION
+	var svg=d3.select(".main-group")
+			.insert("g",".nodes")
+			.attr("class","map")
+			.hide();
+	// ADD A CIRCLE CONTOUR FOR THE DOM-TOM
+	svg.append("circle")
+		.attr("class","outre-mer-circle")
+		.attr("cx",175)
+		.attr("cy",300)
+		.attr("r",55);
+	// ADD A LABEL FOR THE CIRCLE
+	// LINE 1
+	svg.append("text")
+		.attr("class","noselect")
+		.attr("x",175)
+		.attr("y",385)
+		.attr("text-anchor","middle")
+		.text("Départements et Territoires");
+	// LINE 2
+	svg.append("text")
+		.attr("class","noselect")
+		.attr("x",175)
+		.attr("y",405)
+		.attr("text-anchor","middle")
+		.text("d’Outre-Mer (DOM-TOM),");
+	// LINE 3
+	svg.append("text")
+		.attr("class","noselect")
+		.attr("x",175)
+		.attr("y",425)
+		.attr("text-anchor","middle")
+		.text("et Étranger");
+	// LOAD THE MAP DATA
+	d3.json("data/fr.dep.json",function(error,fr){
+	  if (error) return console.error(error);
+	  	// DRAW THE MAP BASED ON THE DATA
+		svg.selectAll(".map-borders")
+			.data(topojson.feature(fr,fr.objects.departements).features)
+			.enter()
+			.append("path")
+			.attr("class", function(d){ 
+				return "map-borders "+stripStr(d.properties.name);
+			})
+			.attr("d", path)
+			.each(function(d){
+				// FOR EACH DEPARTEMENT, ADD AN INVISIBLE
+				// CIRCLE THAT WHEN HOVERED OVER
+				// WILL DISPLAY A SUMMARY PIECHART VIEW
+
+				// DETERMINE WHERE AND HOW BIG THE
+				// CIRCLE SHOULD BE TO BEST FIT IN 
+				// THE DRAWING OF THE DEPARTEMENT
+				var bbox=d3.select(this).node().getBBox(),
+					w=bbox.width,
+					h=bbox.height,
+					r=d3.min([w,h]);
+				// ADD THE CIRCLES BELOW THE DRAWING
+				// OF THE DEPARTEMENT
+				var top_level = d3.select(".map")
+					.insert("circle",".map-borders")
+					.datum({ind:"departement",name:stripStr(d.properties.name),full_name:d.properties.name})
+					.attr("class","map-centroids")
+					.attr("cx",path.centroid(d)[0])
+					.attr("cy",path.centroid(d)[1])
+					.attr("r",r/3)
+					.style("fill","none")
+					.style("stroke","transparent")
+					.style("stroke-width",15)
+					.on("mouseover",showPIE)
+					.on("mouseout",removePIE);
+					// ON MOUSE HOVER ADD AND REMOVE
+					// THE SUMMARY PIE CHART
+				return;
+			});
+		return;
+	});
+	return;
+};
+// DRAW THE SCATTERPLOT ENVIRONMENT
+function drawSCATTERPLOT(){
+	// SET THE DOMAINS FOR THE AXES
+	_scatter_x.domain([0,1]).nice();
+  	_scatter_y.domain([0,1]).nice();
+  	// ADD A GROUP FOR THE SCATTERPLOT
+  	// BELOW THE NODES
+	var svg=d3.select(".main-group")
+			.insert("g",".nodes")
+			.attr("class","scatterplot sp")
+			.hide();
+	// CREATE THE X AXIS
+	// AND THE X AXIS DATA SELECTOR
+	svg.append("g")
+		.attr("class","x axis")
+		.attr("transform","translate("+[0,_scatter_h]+")")
+		.call(_xAxis);
+	// DRAW A CONTAINER FOR THE DROPDOWN MENU
+	var x_label_select=d3.select(".main-group")
+		.insert("foreignObject",".nodes")
+		.attr("width",_scatter_w)
+		.attr("height",22)
+		.attr("x",0)
+		.attr("y",_scatter_h)
+		.attr("transform","translate("+[0,-f_padding]+")")
+		.attr("class","sp")
+		.hide()
+	.append("xhtml:body")
+		.attr("class","f-obj-body")
+	.append("div")
+		.attr("class","btn-group-xs dropup pull-right x-axis-scale");
+	// DRAW THE DROPDOWN BUTTON
+	x_label_select.append("button")
+		.attr("type","button")
+		.attr("class","btn btn-default dropdown-toggle x-indicator")
+		.attr("data-toggle","dropdown")
+		.attr("aria-expanded",false)
+		.html("axe horizontal&nbsp;")
+	.append("span")
+		.attr("class","caret");
+	// SET THE CONTENT OF THE DROPDOWN MENU
+	var x_menu=x_label_select.append("ul")
+		.attr("class","dropdown-menu dropdown-menu-right dropdown-menu-x-axis")
+		.attr("role","menu")
+		.html(function(){
+			var html=d3.select("#hidden")
+				.select(".dropdown-menu-x-axis").html();
+			return html;
+		});
+	// CREATE THE Y AXIS
+	// AND THE Y AXIS DATA SELECTOR
+	svg.append("g")
+		.attr("class","y axis")
+		.attr("transform","translate("+[_scatter_p,0]+")")
+		.call(_yAxis);
+	var y_label_select=d3.select(".main-group")
+		.insert("foreignObject",".nodes")
+		.attr("width",_scatter_w)
+		.attr("height",30)
+		.attr("x",_scatter_p)
+		.attr("y",f_padding)
+		.attr("transform","translate("+[0,-f_padding]+")")
+		.attr("class","sp")
+		.hide()
+	.append("xhtml:body")
+		.attr("class","f-obj-body")
+	.append("div")
+		.attr("class","btn-group-xs pull-left");
+	y_label_select.append("button")
+		.attr("type","button")
+		.attr("class","btn btn-default dropdown-toggle y-indicator")
+		.attr("data-toggle","dropdown")
+		.attr("aria-expanded",false)
+		.html("axe vertical&nbsp;")
+	.append("span")
+		.attr("class","caret");
+	var y_menu=y_label_select.append("ul")
+		.attr("class","dropdown-menu dropdown-menu-y-axis")
+		.attr("role","menu")
+		.html(function(){
+			var html=d3.select("#hidden")
+				.select(".dropdown-menu-y-axis").html();
+			return html;
+		});
+  	return;
+};
+// DRAW THE SCRUTINS ENVIRONMENT
+function drawSCRUTIN(){
+	// ADD A GROUP FOR THE SCRUTINS DROPDOWN
+	// BELOW THE NODES
+	var svg=d3.select(".main-group")
+			.insert("g",".nodes")
+			.attr("class","scrutins")
+			.hide();
+	var scrutin_desc=svg.append("foreignObject")
+		.attr("width",f_width)
+		.attr("height",30)
+		.attr("x",0)
+		.attr("y",f_padding*2)
+		.attr("transform","translate("+[0,-f_padding]+")")
+	.append("xhtml:body")
+		.attr("class","f-obj-body text-center")
+	.append("div")
+		.attr("class","col-sm-6 col-sm-offset-3 scrutin-desc")
+		.html("Scrutin public sur l’ensemble du projet de loi relatif à la délimitation des régions, aux élections régionales et départementales et modifiant le calendrier électoral (lecture définitive).")
+	// ADD THE DROPDOWN MENU
+	var dropdown=d3.select(".main-group")
+		.insert("foreignObject",".nodes")
+		.attr("width",f_width)
+		.attr("height",30)
+		.attr("x",0)
+		.attr("y",f_padding)
+		.attr("transform","translate("+[0,-f_padding]+")")
+		.attr("class","scrutins")
+		.hide()
+	.append("xhtml:body")
+		.attr("class","f-obj-body text-center")
+	.append("div")
+		.attr("class","btn-group-xs");
+	dropdown.append("button")
+		.attr("type","button")
+		.attr("class","btn btn-default dropdown-toggle scrutins-select")
+		.attr("data-toggle","dropdown")
+		.attr("aria-expanded",false)
+		.html("Scrutin n° 997&nbsp;")
+	.append("span")
+		.attr("class","caret");
+	var menu=dropdown.append("ul")
+		.attr("class","dropdown-menu dropdown-menu-scrutin z-high")
+		.attr("role","menu");
+	// ADD A SEARCH ENGINE IN THE DROPDOWN MENU
+	menu.append("li")
+		.on("click",function(){
+			d3.event.stopPropagation();
+			return;
+		})
+	.append("div")
+		.attr("class","form-group col-sm-12")
+	.append("input")
+		.attr("type","text")
+		.attr("class","form-control")
+		.attr("id","scrutin-search-form")
+		.attr("placeholder","Cherchez un scrutin")
+		.on("input",searchingSCRUTINS);
+
+	// LOAD THE DATA TO POPULATE THE DROPDOWN LIST
+	d3.json("data/scrutins/scrutins.desc.json",function(error,scrutins){
+		// SET ALL THE OPTIONS
+		var options=menu.selectAll(".scrutin-opt")
+			.data(scrutins);
+		var text_line=options.enter()
+			.append("li")
+			.attr("class",function(d){
+				var setclass="scrutin-opt";
+				if(d.scrutin_id===997){
+					setclass+=" selected";
+				};
+				return setclass;
+			})
+		var table=text_line.append("a")
+			.on("click",function(d){
+				setupScrutin(d.scrutin_id);
+				d3.select(".scrutins-select")
+					.html("Scrutin n° "+d.scrutin_id+"&nbsp;<span class='caret'></span>");
+				d3.select(".scrutin-desc")
+					.html("<p><u>"+d.seance+"</u></p><p>"+d.desc+"</p>");
+				d3.selectAll(".scrutin-opt.selected")
+					.classed("selected",false);
+				d3.select(this.parentNode)
+					.classed("selected",true);
+				return;
+			})
+			.append("table")
+			.append("tr");
+		table.append("td")
+			.attr("class","table-first-cell")
+			.html(function(d){return d.scrutin_id;})
+		table.append("td")
+			.attr("class","table-second-cell")
+			.html(function(d){return d.desc;})
+		options.append("li")
+			.attr("class","divider");
+		return;
+	});
+	return;	
+};
+
+// CREATE THE NODES FOR THE DEPUTES
+function drawInitialNODES(data){
+	var svg=d3.select(".nodes");
+	// SET THE DEPUTE NODES INITIAL DATA:
+	// ADD ORIGINAL POSITION AND SIZE
+	for (var j = 0; j < data.length; j++){
+		data[j].radius = _node_size;
+		data[j].x=Math.random()*width;
+		data[j].y=Math.random()*height;
+	};
+	// CREATE THE NODES
+	var nodes=svg.selectAll(".node")
+		.data(data);
+	nodes.enter().append("circle")
+		.attr("class",function(d){
+			var depute=toClassStr(d.name);
+			return "node active-dot low-opacity " + depute;
+		})
+		.attr("r",function(d){return _node_size;})
+		.on("click",function(d){
+			if(d3.select(this).classed("active-dot")===false){
+				d3.select(this)
+					.classed("active-dot",true)
+					.moveToFront();
+				d.selected=1;
+			}else{
+				d3.select(this)
+					.classed("active-dot",false)
+					.moveToFront();
+				d.selected=0;
+			};
+			return;
+		})
+		.on("mouseover",function(d){return showPopover(d);})
+		.on("mouseout",function(d){return removePopovers();});
+	// DRAW THE FIRST LAYOUT:
+	// THE HEMISPHERE
+	layoutVIEW('hemi',data);
+	return;
+};
+// DRAW THE SCALE SLIDER THUMB
+function drawSLIDERTHUMB(){
+	var container = d3.select("#scale-slider");
+	container.insert("div")
+		.attr("class","slider-thumb")
+		.style("margin-left", "calc(50% - 40px + 7.5px)")
+		.call(_drag);
+	return;
+};
+
+// ------------------------------------------------------------------------- //
+// MAIN (NODE) DRAWING FUNCTIONS ------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// GENERATE THE MAIN LAYOUT FOR EVERY
+// VIEW EXCEPT THE SCATTERPLOT VIEW
+function layoutVIEW(vname,data){
+	var size=[f_width-f_padding,height],
+		centers=getCenters(vname,size,data);
+	force.on("tick", tick(centers,vname,data));
+	drawCategoricalLABELS(centers,vname)
+	force.start();
+	return;
+};
+
+// ------------------------------------------------------------------------- //
+// DEPENDENCIES FOR NODE CLUSTERING ---------------------------------------- //
+// ------------------------------------------------------------------------- //
+// LOAD THE DATA FOR A SCRUTIN
+// AND DRAW THE LAYOUT
+function setupScrutin(id){
+	d3.json("data/scrutins/s_"+id+".json",function(error,scrutin){
+		// BIND THE NEW DATA TO THE MAIN DATA
+		_global_data.forEach(function(d,i){
+			d.vote=scrutin[i].vote;
+			return;
+		});
+		layoutVIEW("vote",_global_data);
+		return;
+	});
+	return;
+};
+
+// SET THE CENTERS FOR EACH NODE CLUSTER
+function getCenters(vname,size,data){
+	var centers, 
+		map,
+		parseDate=d3.time.format("%Y").parse,
+		timescale=d3.time.scale()
+			.range([f_padding,size[0]-f_padding]),
+		votescale=d3.scale.ordinal()
+			.domain(["absent","non-votant","abstention","contre","pour"])
+			.rangePoints([f_padding*3,size[0]-f_padding*4]);
+	// REMOVE ALL BACKGROUND IMAGES
+	// TO RESET THE VIEW:
+	// HIDE THE MAP
+	d3.select(".map")
+		.hide();
+	// HIDE THE HEMICYCLE
+	d3.select(".hemicycle")
+		.hide();
+	// HIDE THE SCATTERPLOT DIMENSIONS
+	d3.selectAll(".sp")
+		.hide();
+	// HIDE THE SCRUTINS DESCRIPTIONS
+	d3.selectAll(".scrutins")
+		.hide();
+	// RESET THE NODES THAT HAD MISSING DATA
+	// IN THE SCATTERPLOT VIEW
+	d3.selectAll(".node")
+		.classed("missing-dimension",false);
+	// SET VIEW CONDITIONS
+	if(vname==="decade"){
+		timescale.domain(d3.extent(data,function(d){return parseDate(d.decade);}))
+		centers=_.uniq(_.pluck(data,vname)).map(function(d){
+			return{name:d,value:1,x:timescale(parseDate(d)),y:size[1]/2,dx:0, dy:0,ind:vname};
+		});
+	}else if(vname==="departement"||vname==="origin_dep"){
+		// DISPLAY THE MAP
+		d3.select(".map")
+			.show();
+		// GET THE CENTERS FOR EACH DEPARTEMENT
+		centers=data.map(function(d){
+			var dep=stripStr(d[vname]),
+				centroid=[175,300];
+			if(_dep_metropole.indexOf(d[vname])!==-1){
+				var geo_path=d3.select("."+dep);
+				if(geo_path[0][0] !== null){
+					var geo_path_datum=geo_path.datum(),
+						bounds=path.bounds(geo_path_datum);
+					centroid=path.centroid(geo_path_datum);
+				};
+			};
+			return{name:d[vname],value:1,x:centroid[0],y:centroid[1],dx:0,dy:0,ind:vname};
+		});
+	}else if(vname==="hemi"){
+		// DISPLAY THE HEMISPHERE DRAWING
+		d3.select(".hemicycle")
+			.show();
+		centers=_.uniq(_.pluck(data,vname)).map(function(d){
+			return{name:d,value:1,x:size[0]/2,y:size[1]/2,dx:0,dy:0,ind:vname};
+		});
+	}else if(vname==="scatterplot"){
+		// DISPLAY THE SCATTERPLOT AXES
+		d3.selectAll(".sp")	
+			.show();
+		centers=_.uniq(_.pluck(data,vname)).map(function(d){
+			return{name:d,value:1,ind:vname};
+		});
+		// SET AN INITIAL TREEMAP LAYOUT WITH ONLY ONE ROOT
+		map=d3.layout.treemap().size(size).ratio(1/1);
+		map.nodes({children: centers});
+	}else if(vname==="vote"){
+		// DISPLAY THE SCRUTIN DESCRIPTION
+		// AND DROPDOWN MENU
+		d3.selectAll(".scrutins")	
+			.show();
+		centers=_.uniq(_.pluck(data,vname)).map(function(d){
+			return{name:d,value:1,x:votescale(d),y:size[1]/2,dx:0, dy:0,ind:vname};
+		});
+	}else{
+		centers=_.uniq(_.pluck(data,vname)).map(function(d){
+			return{name:d,value:1,ind:vname};
+		});
+		// SET A TREEMAP LAYOUT WITH AS MANY ROOTS AS
+		// THERE ARE CATEGORIES IN THE DATA
+		map = d3.layout.treemap().size(size).ratio(1/1);
+		map.nodes({children: centers});
+	};
+	// MAYBE REMOVE
+	_active_cat=vname;
+	return centers;
+};
+// ANIMATE THE NODES INTO POSITION
+function tick(centers,vname,data){
+	var nodes=d3.selectAll(".node"),
+		foci={};
+	for(var i=0;i<centers.length;i++){
+		foci[centers[i].name]=centers[i];
+	};
+	return function(e){
+		for (var i=0;i<data.length;i++){
+			var o=data[i];
+			var f=foci[o[vname]];
+			o.y+=((f.y+(f.dy/2))-o.y)*e.alpha;
+			o.x+=((f.x+(f.dx/2))-o.x)*e.alpha;
+		};
+	nodes.each(collide(.11,data))
+		.attr("cx",function(d){
+			d.temp_x=d.x;
+			return d.x; 
+		})
+		.attr("cy",function(d){ 
+			d.temp_y=d.y;
+			return d.y; 
+		});
+	};
+};
+// DETECT NODE COLLISION
+// TO MINIMIZE OVERLAP
+// AND VISUAL CLUTTER
+function collide(alpha,data){
+	var maxRadius=d3.max(_.pluck(data,'radius'));
+	var quadtree=d3.geom.quadtree(data);
+	return function(d){
+		var r=d.radius+maxRadius+padding,
+			nx1=d.x-r,
+			nx2=d.x+r,
+			ny1=d.y-r,
+			ny2=d.y+r;
+		quadtree.visit(function(quad,x1,y1,x2,y2){
+			if(quad.point&&(quad.point!==d)){
+				var x=d.x-quad.point.x,
+					y=d.y-quad.point.y,
+					l=Math.sqrt(x*x+y*y),
+					r=d.radius+quad.point.radius+padding;
+				if(l<r){
+					l=(l-r)/l*alpha;
+					d.x-=x*=l;
+					d.y-=y*=l;
+					quad.point.x+=x;
+					quad.point.y+=y;
+				};
+			};
+		return x1>nx2||x2<nx1||y1>ny2||y2<ny1;
+		});
+	};
+	return;
+};
+
+// ------------------------------------------------------------------------- //
+// DEPENDENCIES FOR NODE SCALING ------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// UPDATE THE SCALE DOMAIN
+// AND REDRAW THE NODES,
+// EITHER BY USER-TRIGGERED
+// MOUSE DRAG OF SCALE SLIDER
+// OR AUTOMATICALLY ON VIEW CHANGE
+function updateSCALEDOMAIN(data,vindicator,sdata,ssdata){
+	// RESET ALL NODES TO DEFAULT
+	d3.selectAll(".missing-scale")
+		.classed("missing-scale",false);
+	if(vindicator){
+		// UPDATE THE SCALE DOMAIN
+		// FOR THE NODES
+		_scale.domain(d3.extent(data,function(d){
+			if(d[vindicator]){
+				if(sdata){
+					if(ssdata){
+						return +d[vindicator][sdata][ssdata];
+					}else{
+						return +d[vindicator][sdata];
+					};
+				}else{
+					return +d[vindicator];
+				};
+			};
+		}));
+		// UPDATE THE NODES’ SIZES
+		d3.selectAll(".node")
+			.transition()
+			.duration(500)
+			.attr("r",function(d){
+				if(sdata){
+					if(ssdata){
+						if(d[vindicator]){
+							d.radius=_scale(d[vindicator][sdata][ssdata]);
+						}else{
+							d.radius=_node_size;
+							d3.select(this).classed("missing-scale",true);
+						};
+					}else{
+						if(d[vindicator]){
+							d.radius=_scale(d[vindicator][sdata]);
+						}else{
+							d.radius=_node_size;
+							d3.select(this).classed("missing-scale",true);
+						};
+					};
+				}else{
+					if(d[vindicator]){
+						d.radius=_scale(d[vindicator]);
+					}else{
+						d.radius=_node_size;
+						d3.select(this).classed("missing-scale",true);
+					};
+				};
+				if(isNaN(d.radius)){
+					d.radius=_node_size;
+					d3.select(this).classed("missing-scale",true);
+				};
+				return d.radius;
+			});
+	}else{
+		d3.selectAll(".node")
+			.transition()
+			.duration(500)
+			.attr("r",function(d){ 
+				d.radius=_node_size;
+				return d.radius;
+			});
+	};
+	return;
+};
+// UPDATE AND RENDER THE NEW NODE SIZES
+// ON USER-TRIGGERED CLICK (SOMWHERE ALONG THE SLIDER SCALE)
+// OR AUTOMATICALLY ON VIEW CHANGE (WITH ANIMATED TRANSITION)
+function updateNODESIZES(transition_duration,position){
+	// THIS COULD BE REPLACED BY THE getSliderEXTENT VALUES
+	var el = d3.select("#scale-slider").node(),
+		mouse = d3.mouse(el),
+		slider_w = parseFloat(d3.select(el).style("width")),
+		padding = parseFloat(d3.select(el).style("padding-left")),
+		slider_extent = slider_w - padding*2,
+		slider_range = slider_w - padding*2 - _slider_thumb_max_width,
+		xmouse = mouse[0] - padding;
+	// UPDATE THE SLIDER SCALE
+	_slider_thumb_scale.domain([0,slider_range]);
+	// LIMIT THE MOUSE INPUT
+	if(xmouse <= 0){
+		xmouse = 0;
+	}else if(xmouse >= slider_range){
+		xmouse = slider_range;
+	};
+	// GET THE THUMB SIZE AND ITS POSITION
+	// AND THE PUBLIC VAR NODE MAX SIZE
+	var thumb_size = _slider_thumb_scale(xmouse),
+		thumb_pos = xmouse-thumb_size/2;
+	// CHECK THAT THE POSITION ISN'T SET IN THE FUNCTION
+	// TYPICALLY IN THE CASE WHERE THE SCALE IS UPDATED
+	// DYNAMICALLY WHEN THE USER SWITCHES VIEWS
+	if(position){
+		thumb_size = _slider_thumb_scale(position),
+		thumb_pos = position;
+	};
+	_node_size = thumb_size/2;
+	// LIMIT THE MOUSE INPUT
+	if(!position){
+		if(xmouse <= 0){
+			thumb_pos = 0;
+		}else if(xmouse >= slider_range){
+			thumb_pos = slider_range;
+		};
+	};
+	// UPDATE THE SLIDER THUMB POSITION AND SIZE 
+	// IN THE RENDERING
+	d3.select(".slider-thumb")
+		.transition()
+		.duration(transition_duration)
+		.style("margin-left",thumb_pos+"px")
+		.style("width",thumb_size+"px")
+		.style("height",thumb_size+"px")
+		.style("margin-top",-thumb_size/2+"px");
+	// UPDATE THE NODE SCALE
+	_scale.range([1,_node_size]);
+	// GET THE SCALES FROM SELECTED INDICATORS
+	// THAT ENCODE NODE SIZE
+	var scales = getSCALES();
+	// UPDATE THE SIZES OF THE NODES
+	updateSCALEDOMAIN(scales[0],scales[1],scales[2],scales[3],scales[4]);
+	// GET THE ACTIVE VIEW
+	var view = getVIEW();
+	// REDRAW THE LAYOUT
+	if(view==="scatterplot" && _scatterplot_isset===true){
+		plotDOTS(_xscale_vals,_yscale_vals);
+	}else if(view==="scrutin"){
+		// GET THE ACTIVE SCRUTIN
+		var scrutin_id=getSCRUTIN();
+		setupScrutin(scrutin_id);
+	}else{
+		layoutVIEW(view,_global_data);
+	};
+	return;
+};
+// GET THE SLIDER SCALE RANGE (OR EXTENT)
+function getSliderEXTENT(){
+	var slider=d3.select("#scale-slider"),
+		slider_pl=parseFloat(slider.style("padding-left")),
+		slider_pr=parseFloat(slider.style("padding-right")),
+		slider_s=parseFloat(slider.style("width"))-slider_pl-slider_pr- _slider_thumb_max_width;
+	return [slider.node(),slider_s,slider_pl,slider_pr];
+};
+// THE SCALE SLIDER THUMB
+// DRAGGING FUNCTIONS
+function dragstart(){
+	// DECLARE THAT THE USER IS DRAGGING THE THUMB
+	_scale_thumb_drag=true;
+	var slider_data=getSliderEXTENT();
+	_slider_thumb_scale
+		.domain([0,slider_data[1]]);
+	return;
+};
+function dragmove(){
+	var size=0,
+		slider_data=getSliderEXTENT(),
+		pos_x=d3.mouse(slider_data[0])[0]-slider_data[2];
+		if(pos_x<=0){
+			pos_x=0;
+		}else if(pos_x>=slider_data[1]){
+			pos_x=slider_data[1];
+		};
+  	d3.select(this)
+		.style("margin-left", function(){
+			return pos_x+"px";
+		})
+		.style("width",function(){
+			return _slider_thumb_scale(pos_x)+"px";
+		})
+		.style("height",function(){
+			return _slider_thumb_scale(pos_x)+"px";
+		})
+		.style("margin-top",function(){
+			return -_slider_thumb_scale(pos_x)/2+"px";
+		});
+	// SET THE NODES’ SIZES FOR THE VISUALIZATION
+	_node_size=_slider_thumb_scale(pos_x)/2;
+	_scale.range([1,_node_size]);
+	// AND GET THE CURRENT USER-SELECT SCALE
+	// PROPERTIES TO UPDATE THE SCALE DOMAIN
+	var scales=getSCALES();
+	updateSCALEDOMAIN(scales[0],scales[1],scales[2],scales[3],scales[4]);
+	return;
+};
+function dragend(){
+	// THIS IS REDUNDANT WITH THE END
+	// OF THE updateNODESIZES() FUNCTION
+	// MAYBE REMOVE
+    if(_active_cat==="scatterplot"&&_scatterplot_isset===true){
+      plotDOTS(_xscale_vals,_yscale_vals);
+    }else{
+      layoutVIEW(_active_cat,_global_data);
+    };
+    // DECLARE THAT THE USER IS NO LONGER DRAGGING THE THUMB
+    _scale_thumb_drag = false;
+	return;
+};
+// ------------------------------------------------------------------------- //
+// OVERLAY DRAWING FUNCTIONS ----------------------------------------------- //
+// ------------------------------------------------------------------------- //
+// DRAW THE CATEGORY LABELS 
+// FOR EACH CLUSTER OF NODES
+function drawCategoricalLABELS(centers,vname){
+	var svg=d3.select(".nodes");
+	svg.selectAll(".label").remove();
+	if(vname!=="departement"&&vname!=="origin_dep"){
+		svg.selectAll(".label")
+			.data(centers)
+			.enter()
+			.append("foreignObject")
+			.attr("class", "label noselect")
+			.attr("width",150)
+			.attr("height",200)
+			.attr("x",0)
+			.attr("y",0)
+			.attr("transform",function(d){
+				return "translate("+[(d.x+d.dx/2),(d.y+d.dy/2-12)]+") rotate(-45)";
+			})
+			.html(function(d){ 
+				var s=d.name;
+				if(s!==undefined){
+					return s[0].toUpperCase()+s.slice(1);
+				}else{
+					return null;
+				};
+			})
+			.on("mouseover",showPIE)
+			.on("mouseout",removePIE);
+	};
+	return;
+};
+// DRAW THE SUMMARY PIECHART OVERLAY
+// ON USER-TRIGGERED MOUSEOVER MAP.CIRCLE 
+// OR CATEGORICAL LABEL
+function showPIE(d){
+	var vindicator=d.ind,
+		vname=d.name,
+		departement_name=d.full_name;
+	// IF THE PIECHART IS CALLED FOR ONE
+	// OF THE MAP VIEWS,
+	// CHECK WHETHER THE PIECHART IS FOR
+	// ELECTION DEPARTMENT OR BIRTH DEPARTMENT
+	if(vindicator==="departement"){
+		vindicator=getVIEW();
+	};
+	var total_count=0,
+		select_count=0,
+		select_radical=0,
+		select_ni=0,
+		select_ecolo=0,
+		select_udi=0,
+		select_ps=0,
+		select_ump=0,
+		select_a_ump=0,
+		select_a_ps=0,
+		select_a_ecolo=0,
+		select_gauche=0,
+		select_hommes=0,
+		select_femmes=0;
+	// CHECK WHETHER A COLOR CODE
+	// HAS BEEN SET BY THE USER
+	var color_code=getCOLORS();
+	// COUNT THE DIFFERENT NODES SELECTED 
+	// ACCORDING TO THE COLOR CODING 
+	// (IF THERE IS ONE)
+	d3.selectAll(".node")
+		.each(function(c){
+			var depute=c[vindicator];
+			if(vindicator==="departement"||vindicator==="origin_dep"){
+				depute=stripStr(depute);
+			};
+			if(depute===vname){
+				if(d3.select(this).classed("active-dot")===true){
+					if(color_code==="sexe"){
+						if(c.sexe==="Hommes"){
+							select_hommes++;
+						}else if(c.sexe==="Femmes"){
+							select_femmes++;
+						};
+					}else if(color_code==="parti_s"){
+						var pp=c.parti_s;
+						if(pp==="radical"){
+							select_radical++;
+						}else if(pp==="ni"){
+							select_ni++;
+						}else if(pp==="ecolo"){
+							select_ecolo++;
+						}else if(pp==="udi"){
+							select_udi++;
+						}else if(pp==="ps"){
+							select_ps++;
+						}else if(pp==="ump"){
+							select_ump++;
+						}else if(pp==="a-ump"){
+							select_a_ump++;
+						}else if(pp==="a-ps"){
+							select_a_ps++;
+						}else if(pp==="a-ecolo"){
+							select_a_ecolo++;
+						}else if(pp==="gauche"){
+							select_gauche++;
+						};
+					}
+					select_count++;
+				};
+				total_count++;
+			};
+			return;
+		});
+	// IF THERE ARE DEPUTIES IN THE LIST
+	// DETERMINE THE PERCENTAGE OF SELECTED NODES IN EACH CATEGORY
+	// AND THE PERCENTAGE OF UNSELECTED NODES
+	if(total_count>0){
+		var perc=parseInt((select_count*100/total_count)*10)/10,
+			perc_radical=parseInt((select_radical*100/total_count)*10)/10,
+			perc_ni=parseInt((select_ni*100/total_count)*10)/10,
+			perc_ecolo=parseInt((select_ecolo*100/total_count)*10)/10,
+			perc_udi=parseInt((select_udi*100/total_count)*10)/10,
+			perc_ps=parseInt((select_ps*100/total_count)*10)/10,
+			perc_ump=parseInt((select_ump*100/total_count)*10)/10,
+			perc_a_ump=parseInt((select_a_ump*100/total_count)*10)/10,
+			perc_a_ps=parseInt((select_a_ps*100/total_count)*10)/10,
+			perc_a_ecolo=parseInt((select_a_ecolo*100/total_count)*10)/10,
+			perc_gauche=parseInt((select_gauche*100/total_count)*10)/10,
+			perc_hommes=parseInt((select_hommes*100/total_count)*10)/10,
+			perc_femmes=parseInt((select_femmes*100/total_count)*10)/10;
+		var perc_unselected=100-perc;
+	}else{
+		var perc=0,
+			perc_unselected=100;
+	};
+	// FORMAT THE DATA FOR THE D3 PIE LAYOUT
+	var perc_data=new Array();
+	if(color_code==="sexe"){
+		perc_data=[{type:"Hommes",count:perc_hommes,type_s:"hommes"},{type:"Femmes",count:perc_femmes,type_s:"femmes"},{type:"Reste",count:perc_unselected,type_s:"unselected"}];
+	}else if(color_code==="parti_s"){
+		// ORDER ACCORDING TO SEATING IN THE ASSEMBLEE
+		perc_data=[{type:"Gauche démocrate et républicaine",count:perc_gauche,type_s:"gauche"},{type:"Apparenté Socialiste, républicain et citoyen",count:perc_a_ps,type_s:"a-ps"},{type:"Socialiste, républicain et citoyen",count:perc_ps,type_s:"ps"},{type:"Apparenté Écologiste",count:perc_a_ecolo,type_s:"a-ecolo"},{type:"Écologiste",count:perc_ecolo,type_s:"ecolo"},{type:"Radical, républicain, démocrate et progressiste",count:perc_radical,type_s:"radical"},{type:"Union des démocrates et indépendants",count:perc_udi,type_s:"udi" },{type:"Apparenté Union pour un Mouvement Populaire",count:perc_a_ump,type_s:"a-ump"},{type:"Union pour un Mouvement Populaire",count:perc_ump,type_s:"ump"},{type:"Députés non inscrits",count:perc_ni,type_s:"ni"},{type:"Reste",count:perc_unselected,type_s:"unselected"}];
+	}else{
+		perc_data=[{type:"Selectionné",count:perc,type_s:"selected"},{type:"Reste",count:perc_unselected,type_s:"unselected"}];
+	};
+	// NOW THAT THE DATA IS FORMATTED
+	// DRAW THE SUMMARY PIECHART OVERLAY
+	var svg=d3.select("svg"),
+		svg_node=svg.node(),
+		container=d3.select(".nodes"),
+		this_x=0,
+		this_y=0,
+		pie_size=20;
+	// SET THE D3 PIECHART LAYOUT
+	var arc=d3.svg.arc()
+			.outerRadius(pie_size)
+			.innerRadius(0),
+		pie=d3.layout.pie()
+			.sort(null)
+			.value(function(d) {return d.count;});
+	// SET THE X AND Y POSITION FOR THE PIECHART
+	if(vindicator==="departement"||vindicator==="origin_dep"){
+		this_x=d3.select(this).attr("cx");
+		this_y=d3.select(this).attr("cy");
+	}else{
+		this_x=d3.transform(d3.select(this).attr("transform")).translate[0];
+		this_y=d3.transform(d3.select(this).attr("transform")).translate[1];
+	};
+	var piechart = container.append("g")
+		.attr("class","piechart")
+		.attr("transform",function(d){
+			return "translate("+[this_x,this_y+12]+")";
+		});
+	piechart.append("circle")
+		.attr("class","pie no-pointer-evt")
+		.attr("r",pie_size+3);
+	var g=piechart.selectAll(".arc")
+		.data(pie(perc_data))
+		.enter()
+		.append("g")
+		.attr("class", "arc no-pointer-evt");
+	g.append("path")
+		.attr("d",arc)
+		.attr("class",function(b){
+			return "slice no-pointer-evt low-opacity "+b.data.type_s;
+		});
+	piechart.append("circle")
+		.attr("class","strong-border no-pointer-evt")
+		.attr("r",pie_size+3);
+	if(vindicator==="departement"||vindicator==="origin_dep"){
+		piechart.append("foreignObject")
+			.attr("width",150)
+			.attr("height",20)
+			.attr("x",-75)
+			.attr("y",pie_size*3)
+			.attr("transform","translate("+[0,-f_padding]+")")
+			.attr("class", "dep-label noselect")
+			.html(function(d){
+				return departement_name;
+			});
+	};
+	return;
+};
+// REMOVE THE SUMMARY PIECHART
+// ON USER TRIGGERED MOUSEOUT MAP.CIRCLE 
+// OR CATEGORICAL LABEL
+function removePIE(){
+	d3.selectAll(".piechart").remove();
+	return;
+};
+// DRAW THE POPOVER TOOLTIP
+// FOR EACH DEPUTE ON
+// USER-TRIGGERED MOUSEOVER NODE
+function showPopover(d){
+	var svg=d3.select("svg"),
+		svg_node=svg.node(),
+		mouse = d3.mouse(svg_node),
+		mx = mouse[0],
+		my = mouse[1];
+	svg.append("foreignObject")
+		.attr("width",250)
+		.attr("height",100)
+		.attr("class","inspector-object")
+		.attr("x", function(d){
+			if(mx<width/2){
+				return mx+10;
+			}else{
+				return mx-260;
+			};
+		})
+		.attr("y",my)
+		.attr("transform","translate("+[0,-f_padding]+")")
+		.append("xhtml:body")
+			.attr("class","f-obj-body")
+			.style("height","100px")
+			.style("width","250px")
+		.append("div")
+			.attr("class","inspector-container noselect")
+			.html(function(){ 
+				return "<p class='back-light'><strong><u>"+d.name+"</u></strong></p><p class='back-light'>"+d.job+"</p><p class='back-light'>"+d.info+"</p>"; 
+			});
+	return;
+};
+// REMOVE THE POPOVER TOOLTIP
+// FOR EACH DEPUTE ON
+// USER-TRIGGERED MOUSEOVER NODE
+function removePopovers(){
+	d3.selectAll(".inspector-object")
+		.remove();
+	return;
+};
+
+
+
+// ----- SCATTERPLOT ----- 
+
+
+
+
+//function plotXDOTS(extent,data,vname,indicator,sdata,ssdata){
+function plotXDOTS(data,vindicator,sdata,ssdata,vhtml){
+
+	force.stop();
+
+	if(vindicator){
+		_scatter_x.domain(d3.extent(data,function(d){
+			if(d[vindicator]){
+				if(sdata){
+					if(ssdata){
+						return +d[vindicator][sdata][ssdata];
+					}else{
+						return +d[vindicator][sdata];
+					};
+				}else{
+					return +d[vindicator];
+				};
+			};
+		})).nice();
+
+
+		//_scatter_x.domain(d3.extent(window[extent])).nice();
+		_xscale_vals = [vindicator,sdata,ssdata];
+
+		d3.select(".x.axis")
+			.transition()
+			.duration(500)
+			.call(_xAxis);
+
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cx",function(d){
+				if(sdata){
+					if(ssdata){
+						if(d[vindicator]){
+							d.temp_x = _scatter_x(d[vindicator][sdata][ssdata]);
+						}else{
+							d.temp_x = 0;
+						};
+					}else{
+						if(d[vindicator]){
+							d.temp_x = _scatter_x(d[vindicator][sdata]);
+						}else{
+							d.temp_x = 0;
+						};
+					};
+				}else{
+					if(d[vindicator]){
+						d.temp_x = _scatter_x(d[vindicator]);
+					}else{
+						d.temp_x = 0;
+					};
+				};
+
+				if(isNaN(d.temp_x)){
+					d.temp_x = 0;
+				};
+
+				if(d.temp_x === 0 || d.temp_y === -f_padding){
+					d3.select(this).classed("missing-dimension",true);	
+				}else{
+					d3.select(this).classed("missing-dimension",false);
+				};
+
+				return d.temp_x;
+			});
+	}else{
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cx",function(d){
+				d.temp_x = f_width / 2;
+				return d.temp_x;
+			});
+	};
+
+	/*if(sdata){
+		if(ssdata){
+			d3.selectAll(".node")
+				.transition()
+				.duration(1000)
+				.ease("cubic-in-out")
+				.attr("cx",function(d){
+					if(window[data][d[vname].toLowerCase()] !== undefined){
+						//console.log(window[data][d[vname].toLowerCase()])
+						d.temp_x = +_scatter_x(window[data][d[vname].toLowerCase()][sdata][ssdata]);
+					}else{ 
+						d.temp_x = 0;
+					};
+
+					if(d.temp_x === 0 || d.temp_y === -f_padding){
+						d3.select(this).classed("missing-dimension",true);	
+					}else{
+						d3.select(this).classed("missing-dimension",false);
+					};
+
+					return d.temp_x;
+				});
+		}else{
+			d3.selectAll(".node")
+				.transition()
+				.duration(1000)
+				.ease("cubic-in-out")
+				.attr("cx",function(d){
+					if(window[data][d[vname]] !== undefined){
+						d.temp_x = +_scatter_x(window[data][d[vname]][sdata]);
+					}else{ 
+						d.temp_x = 0;
+					};
+
+					if(d.temp_x === 0 || d.temp_y === -f_padding){
+						d3.select(this).classed("missing-dimension",true);	
+					}else{
+						d3.select(this).classed("missing-dimension",false);
+					};
+
+					return d.temp_x;
+				});
+		};
+	}else{
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cx",function(d){
+				d.temp_x = +_scatter_x(window[data][d[vname]]);
+				if(isNaN(d.temp_x)){ 
+					d.temp_x = 0;
+				};
+
+				if(d.temp_x === 0 || d.temp_y === -f_padding){
+					d3.select(this).classed("missing-dimension",true);	
+				}else{
+					d3.select(this).classed("missing-dimension",false);
+				};
+
+				return d.temp_x;
+			});
+	}*/
+
+
+	d3.select(".x-indicator")
+		.html(vhtml + "&nbsp;<span class='caret'></span>");
+
+	return;
+};
+
+function plotYDOTS(data,vindicator,sdata,ssdata,vhtml){
+
+	force.stop();
+
+	if(vindicator){
+		_scatter_y.domain(d3.extent(data,function(d){
+			if(d[vindicator]){
+				if(sdata){
+					if(ssdata){
+						return +d[vindicator][sdata][ssdata];
+					}else{
+						return +d[vindicator][sdata];
+					};
+				}else{
+					return +d[vindicator];
+				};
+			};
+		})).nice();
+
+
+		//_scatter_x.domain(d3.extent(window[extent])).nice();
+		_yscale_vals = [vindicator,sdata,ssdata];
+
+		d3.select(".y.axis")
+			.transition()
+			.duration(500)
+			.call(_yAxis);
+
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cy",function(d){
+				if(sdata){
+					if(ssdata){
+						if(d[vindicator]){
+							d.temp_y = _scatter_y(d[vindicator][sdata][ssdata]);
+						}else{
+							d.temp_y = -f_padding;
+						};
+					}else{
+						if(d[vindicator]){
+							d.temp_y = _scatter_y(d[vindicator][sdata]);
+						}else{
+							d.temp_y = -f_padding;
+						};
+					};
+				}else{
+					if(d[vindicator]){
+						d.temp_y = _scatter_y(d[vindicator]);
+					}else{
+						d.temp_y = -f_padding;
+					};
+				};
+
+				if(isNaN(d.temp_y)){
+					d.temp_y = -f_padding;
+				};
+
+				if(d.temp_x === 0 || d.temp_y === -f_padding){
+					d3.select(this).classed("missing-dimension",true);	
+				}else{
+					d3.select(this).classed("missing-dimension",false);
+				};
+
+				return d.temp_y;
+			});
+	}else{
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cy",function(d){
+				d.temp_y = f_height / 2;
+				return d.temp_y;
+			});
+	};
+
+	/*_scatter_y.domain(d3.extent(window[extent])).nice();
+	_yscale_vals = [window[data],vname,sdata,ssdata];
+
+	d3.select(".y.axis")
+		.transition()
+		.duration(500)
+		.call(_yAxis);
+
+	if(sdata){
+		if(ssdata){
+			d3.selectAll(".node")
+				.transition()
+				.duration(1000)
+				.ease("cubic-in-out")
+				.attr("cy",function(d){
+					if(window[data][d[vname].toLowerCase()] !== undefined){
+						//console.log(window[data][d[vname].toLowerCase()])
+						d.temp_y = +_scatter_y(window[data][d[vname].toLowerCase()][sdata][ssdata]);
+					}else{ 
+						d.temp_y = -f_padding;
+					};
+
+					if(d.temp_x === 0 || d.temp_y === -f_padding){
+						d3.select(this).classed("missing-dimension",true);	
+					}else{
+						d3.select(this).classed("missing-dimension",false);
+					};
+
+					return d.temp_y;
+				});
+		}else{
+			d3.selectAll(".node")
+				.transition()
+				.duration(1000)
+				.ease("cubic-in-out")
+				.attr("cy",function(d){
+					if(window[data][d[vname]] !== undefined){
+						d.temp_y = +_scatter_y(window[data][d[vname]][sdata]);
+					}else{ 
+						d.temp_y = -f_padding;
+					};
+
+					if(d.temp_x === 0 || d.temp_y === -f_padding){
+						d3.select(this).classed("missing-dimension",true);	
+					}else{
+						d3.select(this).classed("missing-dimension",false);
+					};
+
+					return d.temp_y;
+				});
+		};
+	}else{
+		d3.selectAll(".node")
+			.transition()
+			.duration(1000)
+			.ease("cubic-in-out")
+			.attr("cy",function(d){
+				d.temp_y = +_scatter_y(window[data][d[vname]]);
+				if(isNaN(d.temp_y	)){
+					d.temp_y = -f_padding;
+				};
+
+				if(d.temp_x === 0 || d.temp_y === -f_padding){
+					d3.select(this).classed("missing-dimension",true);	
+				}else{
+					d3.select(this).classed("missing-dimension",false);
+				};
+
+				return d.temp_y;
+			});
+	}*/
+
+
+	d3.select(".y-indicator")
+		.html(vhtml + "&nbsp;<span class='caret'></span>")
+
+	return;
+};
+
+function plotDOTS(xvals,yvals){
+
+	force.stop();
+
+	d3.select(".map")
+		.hide();
+	d3.select(".hemicycle")
+		.hide();
+	d3.selectAll(".sp")
+		.hide();
+	d3.selectAll(".scrutins")
+		.hide();
+
+
+	d3.selectAll(".node")
+		.classed("missing-dimension",false);
+
+	d3.selectAll(".label").remove();
+
+	d3.selectAll(".node")
+		.transition()
+		.duration(1000)
+		.ease("cubic-in-out")
+		.attr("cx",function(d,i){
+			if(xvals[1]){
+				if(xvals[2]){
+					if(d[xvals[0]]){
+						d.temp_x = _scatter_x(d[xvals[0]][xvals[1]][xvals[2]]);
+					}else{
+						d.temp_x = 0;
+					};
+				}else{
+					if(d[xvals[0]]){
+						d.temp_x = _scatter_x(d[xvals[0]][xvals[1]]);
+					}else{
+						d.temp_x = 0;
+					};
+				};
+			}else{
+				if(d[xvals[0]]){
+					d.temp_x = _scatter_x(d[xvals[0]]);
+				}else{
+					d.temp_x = 0;
+				};
+			};
+
+			if(isNaN(d.temp_x)){
+				d.temp_x = 0;
+			};
+
+			if(d.temp_x === 0 || d.temp_y === -f_padding){
+				d3.select(this).classed("missing-dimension",true);	
+			}else{
+				d3.select(this).classed("missing-dimension",false);
+			};
+
+			return d.temp_x;
+		})
+		.attr("cy",function(d){
+			if(yvals[1]){
+				if(yvals[2]){
+					if(d[yvals[0]]){
+						d.temp_y = _scatter_y(d[yvals[0]][yvals[1]][yvals[2]]);
+					}else{
+						d.temp_y = -f_padding;
+					};
+				}else{
+					if(d[yvals[0]]){
+						d.temp_y = _scatter_y(d[yvals[0]][yvals[1]]);
+					}else{
+						d.temp_y = -f_padding;
+					};
+				};
+			}else{
+				if(d[yvals[0]]){
+					d.temp_y = _scatter_y(d[yvals[0]]);
+				}else{
+					d.temp_y = -f_padding;
+				};
+			};
+
+			if(isNaN(d.temp_y)){
+				d.temp_y = -f_padding;
+			};
+
+			if(d.temp_x === 0 || d.temp_y === -f_padding){
+				d3.select(this).classed("missing-dimension",true);	
+			}else{
+				d3.select(this).classed("missing-dimension",false);
+			};
+
+			return d.temp_y;
+		});
+
+	//d3.select(".y-indicator")
+		//.html(vhtml + "&nbsp;<span class='caret'></span>");
+
+	return;
+};
+
+// VISUAL CUE FOR CLICK AND DRAG
+function tutorialCLICKDRAG(){
+
+	var svg = d3.select("svg"),
+		svg_node = svg.node(),
+		mouse = d3.mouse(svg_node),
+		select_w = 200,
+		select_h = 150;
+
+	var simu_brush = svg.append("rect")
+		.attr("class","simu-brush")
+		.attr("width",0)
+		.attr("height",0)
+		.attr("x",mouse[0])
+		.attr("y",mouse[1])
+		.attr("stroke-dasharray","5,5");
+		//.attr("clip-path","url(#simu-clip)");
+
+	var simu_cursor = svg.append("g")
+		.attr("class","simu-cursor")
+		.attr("transform","translate(" + [mouse[0],mouse[1]] + ")");
+
+	var text = svg.append("g")
+		.attr("class","brush-tuto-text noselect")
+		.style("fill","#CCC")
+		.style("opacity",0);
+
+	var line1 = text.append("text")
+		.attr("text-anchor","middle")
+		.attr("x",function(){
+			var x = mouse[0];
+			if(mouse[0] <= f_width/2){
+				x = mouse[0] + select_w/2;
+			}else{
+				x = mouse[0] - select_w/2;
+			};
+			return x;
+		})
+		.attr("y",function(){
+			var y = mouse[1];
+			if(mouse[1] <= f_height/2){
+				y = mouse[1] + select_h/2 - 20;
+			}else{
+				y = mouse[1] - select_h/2 - 20;
+			};
+			return y;
+		})
+		.text("Cliquez et faites glisser")
+
+	var line2 = text.append("text")
+		.attr("text-anchor","middle")
+		.attr("x",function(){
+			var x = mouse[0];
+			if(mouse[0] <= f_width/2){
+				x = mouse[0] + select_w/2;
+			}else{
+				x = mouse[0] - select_w/2;
+			};
+			return x;
+		})
+		.attr("y",function(){
+			var y = mouse[1];
+			if(mouse[1] <= f_height/2){
+				y = mouse[1] + select_h/2;
+			}else{
+				y = mouse[1] - select_h/2;
+			};
+			return y;
+		})
+		.text("le curseur pour sélectionner")
+
+	var line3 = text.append("text")
+		.attr("text-anchor","middle")
+		.attr("x",function(){
+			var x = mouse[0];
+			if(mouse[0] <= f_width/2){
+				x = mouse[0] + select_w/2;
+			}else{
+				x = mouse[0] - select_w/2;
+			};
+			return x;
+		})
+		.attr("y",function(){
+			var y = mouse[1];
+			if(mouse[1] <= f_height/2){
+				y = mouse[1] + select_h/2 + 20;
+			}else{
+				y = mouse[1] - select_h/2 + 20;
+			};
+			return y;
+		})
+		.text("plusieurs députés à la fois.")		
+
+	simu_cursor.append("line")
+		.attr("x1",0)
+		.attr("y1",-7)
+		.attr("x2",0)
+		.attr("y2",7);
+
+	simu_cursor.append("line")
+		.attr("x1",-7)
+		.attr("y1",0)
+		.attr("x2",7)
+		.attr("y2",0);
+
+	simu_brush.transition()
+		.duration(1000)
+		.attr("width",select_w)
+		.attr("height",select_h)
+		.attr("x",function(){
+			var x = mouse[0];
+			if(mouse[0] > f_width/2){
+				x = mouse[0] - select_w;
+			};
+			return x;
+		})
+		.attr("y",function(){
+			var y = mouse[1];
+			if(mouse[1] > f_height/2){
+				y = mouse[1] - select_h;
+			};
+			return y;
+		});
+
+	simu_cursor.transition()
+		.duration(1000)
+		.attr("transform",function(){
+			var pos = [mouse[0],mouse[1]];
+			if(mouse[0] <= f_width/2){
+				pos[0] = mouse[0] + select_w;
+			}else{
+				pos[0] = mouse[0] - select_w;
+			};
+			if(mouse[1] <= f_height/2){
+				pos[1] = mouse[1] + select_h; 
+			}else{
+				pos[1] = mouse[1] - select_h;
+			};
+			return "translate(" + pos + ")";
+		});
+
+	text.transition()
+		.duration(1000)
+		.ease("cubic-in")
+		.style("fill","#000")
+		.style("opacity",1);
+
+	simu_brush.transition()
+		.duration(1000)
+		.delay(3000)
+		.attr("width",0)
+		.attr("height",0)
+		.attr("x",function(){
+			var x = mouse[0];
+			if(mouse[0] <= f_width/2){
+				x = mouse[0] + select_w;
+			}else{
+				x = mouse[0] - select_w;
+			};
+			return x;
+		})
+		.attr("y",function(){
+			var y = mouse[1];
+			if(mouse[1] <= f_height/2){
+				y = mouse[1] + select_h;
+			}else{
+				y = mouse[1] - select_h;
+			};
+			return y;
+		})
+		.each("end",function(){
+			//d3.select(this).remove();
+			//d3.select(".simu-cursor").remove();
+			cleartutorialCLICKDRAG();
+		});
+
+	text.transition()
+		.duration(1000)
+		.delay(3000)
+		.ease("cubic-out")
+		.style("fill","#CCC")
+		.style("opacity",0);
+
+	return;
+};
+
+function cleartutorialCLICKDRAG(){
+	d3.select(".simu-brush").remove();
+	d3.select(".simu-cursor").remove();
+	d3.select(".brush-tuto-text").remove();
+	return;
+};

@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+  <script type="text/javascript" src="libs/d3.js"></script>
+  <script type="text/javascript" src="data/sieges.filter.data.js"></script>
+  <script type="text/javascript" src="data/sieges.pos.data.js"></script>
+
+</head>
+
+<body>
+
+</body>
+
+<script type="text/javascript">
+
+var deps = ["Damien Abad", "Laurence Abeille", "Ibrahim Aboubacar", "Élie Aboud", "Bernard Accoyer", "Patricia Adam", "Sylviane Alaux", "Éric Alauzet", "Yves Albarello", "Brigitte Allain", "Jean-Pierre Allossery", "Nicole Ameline", "Pouria Amirshahi", "François André", "Sylvie Andrieux", "Benoist Apparu", "Nathalie Appéré", "Kader Arif", "Laurence Arribagé", "François Asensi", "Christian Assaf", "Isabelle Attard", "Julien Aubert", "Olivier Audibert Troin", "Danielle Auroi", "Joël Aviragnet", "Pierre Aylagas", "Jean-Marc Ayrault", "Bruno Nestor Azerot", "Alexis Bachelay", "Guillaume Bachelay", "Jean-Paul Bacquet", "Dominique Baert", "Patrick Balkany", "Gérard Bapt", "Jean-Pierre Barbier", "Serge Bardy", "Ericka Bareigts", "Claude Bartolone",, "Christian Bataille", "Delphine Batho", "Marie-Noëlle Battistel", "Laurent Baumel", "Philippe Baumel", "Denis Baupin", "Nicolas Bays", "Catherine Beaubatie", "Marie-Françoise Bechtel", "Jean-Marie Beffara", "Huguette Bello", "Luc Belot", "Jacques Alain Bénisti", "Thierry Benoit", "Karine Berger", "Sylvain Berrios", "Chantal Berthelot", "Xavier Bertrand", "Véronique Besse", "Gisèle Biémouret", "Philippe Bies", "Erwann Binet", "Étienne Blanc", "Jean-Pierre Blazy", "Yves Blein", "Jean-Luc Bleunven", "Patrick Bloche", "Alain Bocquet", "Daniel Boisserie", "Jacques Bompard", "Michèle Bonneton", "Marcel Bonnot", "Christophe Borgel", "Jean-Claude Bouchet", "Florent Boudié", "Marie-Odile Bouillé", "Christophe Bouillon", "Gilles Bourdouleix", "Brigitte Bourguignon", "Malek Boutih", "Kheira Bouziane", "Valérie Boyer", "Emeric Bréhier", "Xavier Breton", "Philippe Briand", "Jean-Louis Bricout", "Jean-Jacques Bridey", "Bernard Brochand", "François Brottes", "Isabelle Bruneau", "Marie-George Buffet", "Gwenegan Bui", "Sabine Buis", "Jean-Claude Buisine", "Sylviane Bulteau", "Vincent Burroni", "Dominique Bussereau", "Alain Calmette", "Jean-Christophe Cambadélis", "Jean-Jacques Candelier", "Colette Capdevielle", "Yann Capet", "Christophe Caresche", "Marie-Arlette Carlotti", "Jean-Noël Carpentier", "Olivier Carré", "Fanélie Carrey-Conte", "Gilles Carrez", "Martine Carrillon-Couvreur", "Patrice Carvalho", "Christophe Castaner", "Laurent Cathala", "Jean-Yves Caullet", "Christophe Cavard", "Yves Censi", "Nathalie Chabanne", "Ary Chalus", "Guy Chambefort", "Jean-Paul Chanteguet", "Marie-Anne Chapdelaine", "Gérard Charasse", "Gaby Charroux", "Jérôme Chartier", "André Chassaigne", "Luc Chatel", "Guy-Michel Chauveau", "Dominique Chauvel", "Pascal Cherki", "Gérard Cherpion", "Guillaume Chevrollier", "Alain Chrétien", "Jean-Louis Christ", "Dino Cinieri", "Jean-David Ciot", "Éric Ciotti", "Alain Claeys", "Stéphane Claireaux", "Jean-Michel Clément", "Marie-Françoise Clergeau", "Philippe Cochet", "Romain Colas", "Gilbert Collard", "Jean-François Copé", "Philip Cordery", "François Cornut-Gentille", "Sergio Coronado", "Valérie Corre", "Jean-Louis Costes", "Jean-Jacques Cottel", "Charles de Courson", "Édouard Courtial", "Catherine Coutelle", "Jean-Michel Couve", "Jacques Cresta", "Pascale Crozon", "Frédéric Cuvillier", "Carlos Da Silva", "Seybah Dagoma", "Marie-Christine Dalloz", "Yves Daniel", "Gérald Darmanin", "Olivier Dassault", "Marc-Philippe Daubresse", "Bernard Debré", "Jean-Pierre Decool", "Bernard Deflesselles", "Laurent Degallaix", "Lucien Degauchy", "Pascal Deguilhem", "Rémi Delatte", "Florence Delaunay", "Michèle Delaunay", "Guy Delcourt", "Pascal Demarthe", "Stéphane Demilly", "Sébastien Denaja", "Françoise Descamps-Crosnier", "Sophie Dessus", "Jean-Louis Destans", "Michel Destot", "Patrick Devedjian", "Nicolas Dhuicq", "Sophie Dion", "Marc Dolez", "Fanny Dombre Coste", "Jean-Pierre Door", "Dominique Dord", "René Dosière", "Sandrine Doucet", "Philippe Doucet", "David Douillet", "Jeanine Dubié", "Marianne Dubois", "Françoise Dubois", "Virginie Duby-Muller", "Jean-Pierre Dufau", "Cécile Duflot", "Anne-Lise Dufour-Tonini", "William Dumas", "Françoise Dumas", "Jean-Louis Dumont", "Laurence Dumont", "Nicolas Dupont-Aignan", "Jean-Paul Dupré", "Yves Durand", "Philippe Duron", "Olivier Dussopt", "Henri Emmanuelli", "Corinne Erhel", "Sophie Errante", "Christian Estrosi", "Marie-Hélène Fabre", "Olivier Falorni", "Daniel Fasquelle", "Martine Faure", "Alain Fauré", "Olivier Faure", "Yannick Favennec", "Georges Fenech", "Hervé Féron", "Richard Ferrand", "Aurélie Filippetti", "François Fillon", "Philippe Folliot", "Marie-Louise Fort", "Yves Foulon", "Hugues Fourage", "Jean-Marc Fournel", "Valérie Fourneyron", "Michèle Fournier-Armand", "Michel Françaix", "Marc Francina", "Christian Franqueville", "Jacqueline Fraysse", "Jean-Christophe Fromantin", "Yves Fromion", "Jean-Claude Fruteau", "Laurent Furst", "Jean-Louis Gagnaire", "Geneviève Gaillard", "Yann Galut", "Claude de Ganay", "Sauveur Gandolfi-Scheit", "Guillaume Garot", "Hervé Gaymard", "Annie Genevard", "Guy Geoffroy", "Hélène Geoffroy", "Bernard Gérard", "Jean-Marc Germain", "Alain Gest", "Paul Giacobbi", "Daniel Gibbes", "Franck Gilard", "Jean-Patrick Gille", "Georges Ginesta", "Charles-Ange Ginesy", "Jean-Pierre Giran", "Joël Giraud", "Jean Glavany", "Yves Goasdoué", "Claude Goasguen", "Daniel Goldberg", "Philippe Gomes", "Jean-Pierre Gorges", "Philippe Gosselin", "Geneviève Gosselin-Fleury", "Pascale Got", "Marc Goua", "Philippe Goujon", "Linda Gourjade", "Laurent Grandguillaume", "Claude Greff", "Estelle Grelier", "Jean Grellier", "Anne Grommerch", "Arlette Grosskost", "Serge Grouard", "Henri Guaino", "Françoise Guégot", "Edith Gueugneau", "Jean-Claude Guibal", "Élisabeth Guigou", "Jean-Jacques Guillet", "Christophe Guilloteau", "Chantal Guittet", "David Habib", "Meyer Habib", "Razzy Hammadi", "Benoît Hamon", "Mathieu Hanotin", "Michel Heinrich", "Michel Herbillon", "Antoine Herth", "Patrick Hetzel", "Francis Hillmeyer", "Gilda Hobert", "Philippe Houillon", "Guénhaël Huet", "Joëlle Huillier", "Sandrine Hurel", "Christian Hutin", "Sébastien Huyghe", "Monique Iborra", "Françoise Imbert", "Michel Issindou", "Christian Jacob", "Denis Jacquat", "Éric Jalton", "Serge Janquin", "Yves Jégo", "Henri Jibrayel", "Régis Juanico", "Armand Jung", "Laurent Kalinowski", "Marietta Karamanli", "Philippe Kemel", "Christian Kert", "Chaynesse Khirouni", "Nathalie Kosciusko-Morizet", "Jacques Kossowski", "Jacques Krabal", "Laure de La Raudière", "Charles de La Verpillière", "Patrick Labaune", "Bernadette Laclais", "Valérie Lacroute", "Conchita Lacuey", "Marc Laffineur", "Sonia Lagarde", "Jean-Christophe Lagarde", "Jérôme Lambert", "François-Michel Lambert", "Jacques Lamblin", "Jean-François Lamour", "François Lamy", "Anne-Christine Lang", "Colette Langlade", "Guillaume Larrivé", "Jean Lassalle", "Jean Launay", "Jean-Luc Laurent", "Thierry Lazaro", "Pierre-Yves Le Borgn’", "Jean-Yves Le Bouillonnec", "Gilbert Le Bris", "Isabelle Le Callennec", "Anne-Yvonne Le Dain", "Jean-Yves Le Déaut", "Viviane Le Dissez", "Marc Le Fur", "Annie Le Houerou", "Annick Le Loch", "Bruno Le Maire", "Dominique Le Mèner", "Philippe Le Ray", "Jean-Pierre Le Roch", "Bruno Le Roux", "Alain Leboeuf", "Patrick Lebreton", "Michel Lefait", "Frédéric Lefebvre", "Dominique Lefebvre", "Pierre Lellouche", "Patrick Lemasle", "Catherine Lemorton", "Christophe Léonard", "Jean Leonetti", "Annick Lepetit", "Pierre Lequiller", "Arnaud Leroy", "Maurice Leroy", "Michel Lesage", "Bernard Lesterlin", "Serge Letchimy", "Céleste Lett", "Geneviève Levy", "Michel Liebgott", "Martine Lignières-Cassou", "Audrey Linkenheld", "François Loncle", "Gabrielle Louis-Carabin", "Lucette Lousteau", "Véronique Louwagie", "Lionnel Luca", "Victorin Lurel", "Gilles Lurton", "Jean-Pierre Maggi", "Noël Mamère", "Jean-François Mancel", "Jacqueline Maquet", "Laurent Marcangeli", "Marie-Lou Marcel", "Marion Maréchal-Le Pen", "Thierry Mariani", "Alfred Marie-Jeanne", "Hervé Mariton", "Alain Marleix", "Olivier Marleix", "Franck Marlin", "Jean-René Marsac", "Alain Marsaud", "Philippe Martin", "Philippe Armand Martin", "Patrice Martin-Lalande", "Martine Martinel", "Alain Marty", "Frédérique Massat", "Véronique Massonneau", "Jean-Claude Mathis", "Sandrine Mazetier", "François de Mazières", "Michel Ménard", "Patrick Mennucci", "Gérard Menuel", "Damien Meslot", "Kléber Mesquida", "Philippe Meunier", "Jean-Claude Mignon", "Jacques Moignard", "Paul Molac", "Pierre Morange", "Yannick Moreau", "Pierre Morel-A-L’Huissier", "Hervé Morin", "Alain Moyne-Bressand", "Pierre-Alain Muet", "Jacques Myard", "Dominique Nachury", "Philippe Nauche", "Yves Nicolin", "Nathalie Nieson", "Jean-Philippe Nilor", "Philippe Noguès", "Robert Olive", "Maud Olivier", "Patrick Ollier", "Dominique Orliac", "Monique Orphé", "Michel Pajon", "Bertrand Pancher", "Luce Pane", "Christian Paul", "Rémi Pauvros", "Valérie Pécresse", "Germinal Peiro", "Jacques Pélissard", "Hervé Pellois", "Jean-Claude Perez", "Bernard Perrut", "Edouard Philippe", "Sébastien Pietrasanta", "Martine Pinville", "Christine Pires Beaune", "Michel Piron", "Philippe Plisson", "Elisabeth Pochon", "Jean-Frédéric Poisson", "Bérengère Poletti", "Napole Polutélé", "Barbara Pompili", "Axel Poniatowski", "Josette Pons", "Pascal Popelin", "Dominique Potier", "Émilienne Poumirol", "Michel Pouzol", "Régine Povéda", "Patrice Prat", "Christophe Premat", "Christophe Priou", "Joaquim Pueyo", "François Pupponi", "Didier Quentin", "Catherine Quéré", "Valérie Rabault", "Monique Rabin", "Dominique Raimbourg", "Marie Récalde", "Frédéric Reiss", "Jean-Luc Reitzer", "Marie-Line Reynaud", "Bernard Reynès", "Franck Reynier", "Arnaud Richard", "Franck Riester", "Eduardo Rihan Cypel", "Thierry Robert", "Denys Robiliard", "Arnaud Robinet", "Camille de Rocca Serra", "François Rochebloine", "Alain Rodet", "Marcel Rogemont", "Sophie Rohfritsch", "Frédéric Roig", "Barbara Romagnan", "Bernard Roman", "Gwendal Rouillard", "Jean-Louis Roumegas", "René Rouquet", "Alain Rousset", "François de Rugy", "Martial Saddier", "Maina Sage", "Boinali Said", "Stéphane Saint-André", "Paul Salen", "Rudy Salles", "Nicolas Sansu", "Béatrice Santais", "André Santini", "Eva Sas", "Odile Saugues", "François Sauvadet", "Gilbert Sauvan", "Gilles Savary", "François Scellier", "Claudine Schmid", "André Schneider", "Roger-Gérard Schwartzenberg", "Gérard Sebaoun", "Jean-Marie Sermier", "Gabriel Serville", "Fernand Siré", "Christophe Sirugue", "Thierry Solère", "Julie Sommaruga", "Michel Sordi", "Éric Straumann", "Claude Sturni", "Alain Suguenot", "Michèle Tabarot", "Jonas Tahuaitu", "Suzanne Tallard", "Lionel Tardy", "Jean-Charles Taugourdeau", "Guy Teissier", "Pascal Terrasse", "Michel Terrot", "Jean-Marie Tetart", "Thomas Thévenoud", "Dominique Tian", "Sylvie Tolmont", "Jean-Louis Touraine", "Alain Tourret", "Stéphane Travert", "Catherine Troallic", "Jean-Paul Tuaiva", "Cécile Untermaier", "Jean-Jacques Urvoas", "Daniel Vaillant", "Jacques Valax", "Clotilde Valter", "François Vannson", "Catherine Vautrin", "Michel Vauzelle", "Olivier Véran", "Francis Vercamer", "Patrice Verchère", "Fabrice Verdier", "Michel Vergnier", "Jean-Sébastien Vialatte", "Philippe Vigier", "Jean-Pierre Vigier", "Patrick Vignal", "François-Xavier Villain", "Jean-Michel Villaumé", "Philippe Vitel", "Jean Jacques Vlody", "Michel Voisin", "Jean-Luc Warsmann", "Laurent Wauquiez", "Éric Woerth", "Paola Zanetti", "Marie-Jo Zimmermann", "Michel Zumkeller"];
+
+
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
+
+    function writeJSONToDom(title, content) {
+      d3.select("body").html("<div class='header'>var " + title + " = </div><div><pre>" + content + "</pre></div>");
+    }
+    function writeCSVToDom(content) {
+      d3.select("body").html("<div class='header'><div><pre>name,scrutin_id,desc,seance,vote<br/>" + content + "</pre></div>");
+    }
+
+    function convertToCSV(objArray) {
+        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+        var str = '';
+
+        for (var i = 0; i < array.length; i++) {
+            var line = '';
+            for (var index in array[i]) {
+                if (line != '') line += '","'
+
+                line += array[i][index];
+            }
+
+            str += '"' + line + '"\r\n';
+        }
+
+        return str;
+    }
+
+//var data_treated = new Array(),
+//    data_treated_csv = new Array();
+//
+//deps.forEach(function(depute,i){
+//  data_treated[i]=new Object();
+//  data_treated[i][depute]=new Object;
+//});
+//
+//
+//d3.json("data/scrutins.json", function(error, data) {
+//
+//  deps.forEach(function(depute,i){
+//    if(/*i>500 && */i<=50){
+//      data.forEach(function(d){
+//
+//        /*if(d.pour.indexOf(depute) !== -1){
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "pour" };
+//        }else if(d.contre.indexOf(depute) !== -1){
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "contre" };
+//        }else if(d.abstention.indexOf(depute) !== -1){
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "abstention" };
+//        }else if(d.non_votant.indexOf(depute) !== -1){
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "non-votant" };
+//        }else if(d.non_votants.indexOf(depute) !== -1){
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "non-votant" };
+//        }else{
+//          data_treated[i][depute]["scr_" + d.scrutin_id] = { scrutin_id: d.//scrutin_id, desc: d.desc, seance: d.seance, vote: "absent" };
+//        };*/
+//
+//        if(d.pour.indexOf(depute) !== -1){
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "pour" });
+//        }else if(d.contre.indexOf(depute) !== -1){
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "contre" });
+//        }else if(d.abstention.indexOf(depute) !== -1){
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "abstention" });
+//        }else if(d.non_votant.indexOf(depute) !== -1){
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "non-votant" });
+//        }else if(d.non_votants.indexOf(depute) !== -1){
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "non-votant" });
+//        }else{
+//          data_treated_csv.push({ name: depute, scrutin_id: d.scrutin_id, desc: //d.desc, seance: d.seance, vote: "absent" });
+//        };
+//
+//      })
+//    }
+//  });
+//    var jsonObject = JSON.stringify(data_treated_csv, null, 4);
+//    writeJSONToDom('data', jsonObject);
+//    /*var jsonObject = JSON.stringify(data_treated_csv, null, 4);
+//    writeCSVToDom(convertToCSV(jsonObject));*/
+//});
+var places_data = new Array();
+
+place_names.forEach(function(d){
+  place_pos.forEach(function(c){
+    if(d.siege === c.id){
+      places_data.push({ siege_id: c.id, nom: d.nom, s_x: c.x, s_y: c.y });
+    };
+  });
+});
+
+console.log(places_data)
+
+
+
+</script>
+
+</html>

@@ -1,0 +1,66 @@
+<?php
+	include_once("connect.php");
+
+	function myStrtotime($date_string){ 
+		return strtotime(strtr(strtolower($date_string), array('janvier'=>'jan','février'=>'feb','mars'=>'march','avril'=>'apr','mai'=>'may','juin'=>'jun','juillet'=>'jul','août'=>'aug','septembre'=>'sep','octobre'=>'oct','novembre'=>'nov','décembre'=>'dec')));
+	}
+	
+	function convert($date){
+		$converteddate = date("F j, Y g:ia", myStrtotime($date));
+		return $converteddate;
+	}
+
+	function getQuestions($sort,$cID){
+		$questions = "";
+		$sql = mysql_query("SELECT * FROM questions WHERE c_id = '". $cID ."' ORDER BY ". $sort ." DESC") or die(mysql_error());
+		if(mysql_num_rows($sql) == 0){
+			$questions = "<div class='btn btn-block btn-default  no-radius each-question grayed'>Il n’y a pas de questions pour le moment</div>";
+		}else{
+			while($row = mysql_fetch_assoc($sql)){
+				$questions .= "<div class='btn btn-block btn-default no-radius each-question col-sm-12' onclick='expandRESPONSES(this,\"". $row['id'] ."\")'>
+						<div class='question-stats text-center col-sm-2'>
+							<div class='responses-count'><span class='large-num'>". $row['r_count'] ."</span><br /><small>réponses</small></div>
+							<div class='separator'></div>
+							<div class='votes-count'><span class='large-num'>". $row['r_votes'] ."</span><br /><small>votes</small></div>
+						</div>
+						<div class='question-text col-sm-10'>
+							<p class='author-name'><small>auteur&thinsp;:</small> ". $row['q_author'] ."</p>
+							<small>
+							<u>". convert($row['q_date']) ."</u>
+							</small>
+							<br /><br />
+							<p class='the-question'>". $row['q_text'] ."</p>
+						</div>
+				</div>";
+			}
+		}
+		return $questions;
+	}
+
+	function postQuestions($question,$author,$cID){
+		$question = mysql_real_escape_string(strip_tags($question));
+		$author = mysql_real_escape_string(strip_tags($author));
+		$sql = mysql_query("INSERT INTO questions (q_text, q_author, q_date, c_id) VALUES ('". $question ."', '". $author ."', now(), '". $cID ."')");
+		return true;
+	}
+
+	if((isset($_GET['action'])) && ($_GET['action'] == "post")){
+		postQuestions($_POST['question'],$_POST['author'],$_POST['c_id']);
+	}
+
+	$sort = "";
+	if(isset($_POST['sort'])){
+		$sort = $_POST['sort'];
+	}else{
+		$sort = "q_date";
+	}
+
+	$cID = "";
+	if(isset($_POST['c_id'])){
+		$cID = $_POST['c_id'];
+	}else{
+		$cID = 0;
+	}
+
+	echo getQuestions($sort,$cID);
+?>

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="libs/d3.js"></script>
+	<script type="text/javascript">
+		var _main_data;
+	</script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+d3.json("data/scrutins/scrutins.desc.json",function(error,json){
+	if(error) console.log(error)
+	d3.json("scrutin.aggregated.data.json",function(error,json2){
+		json2.forEach(function(d){
+			json.forEach(function(c){
+				if(d.scrutin_id===c.scrutin_id){
+					c.pour=d.pour;
+					c.contre=d.contre;
+					c.abstention=d.abstention;
+					c.absent=577-d.pour-d.contre-d.abstention;
+				};
+			})
+		});
+	});
+	console.log(json)
+	_main_data=json;
+	return;
+});
+//console.log(_main_data)
+</script>
+
+</body>
+
+</html>

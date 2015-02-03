@@ -1,0 +1,223 @@
+function expandRESPONSES(el,id){
+	d3.selectAll("div.response-container").remove();
+	var question=d3.select(el).select(".the-question").html();
+    // TRACE USER EVENT
+    console.log(["user","click","question","["+[getVIEW(),question,"question-"+id]+"]"])
+    // TRACE SYSTEM EVENT
+    console.log(["system","display","responses-system",false])
+
+	var _this=d3.select(el),
+		container=d3.select(".col-responses");
+
+	d3.selectAll(".each-question.selected")
+		.classed("selected",false);
+	_this.classed("selected",true);
+
+	var row=container.append("div")
+		.attr("class","response-container");
+
+	row.append("blockquote")
+		.html("<small>Question&thinsp;:</small> «&thinsp;"+question+"&thinsp;»");
+
+	var sort_buttons=row.append("div")
+		.attr("id","r-sort")
+		.attr("class","btn-group col-sm-12 no-padding-left");
+
+	sort_buttons.append("div")
+		.attr("class","btn btn-inverse btn-sm")
+		.attr("disabled","disabled")
+		.html("Trier par&thinsp;:");
+	sort_buttons.append("div")
+		.attr("id","r_date")
+		.attr("class","btn btn-default btn-sm r-sort")
+		.attr("disabled","disabled")
+		.html("Date");
+	sort_buttons.append("div")
+		.attr("id","r_vote")
+		.attr("class","btn btn-default btn-sm r-sort")
+		.html("Score");
+	sort_buttons.append("div")
+		.attr("id","r_total_votes")
+		.attr("class","btn btn-default btn-sm r-sort")
+		.html("Total des votes");
+
+	responses=row.append("div")
+		.attr("class","responses col-sm-12 no-padding-left");
+
+	responses.append("div")
+		.attr("class","col-sm-12 text-center loader")
+	.append("img")
+		.attr("src","img/loading.gif")
+		.attr("width","30%");
+
+	$.ajax({
+		type:"POST",
+		url:"question_system/responses.php",
+		data:{q_id:id}
+	})
+	.done(function(txt){
+		d3.select(".responses")
+			.html(txt);
+	    // TRACE SYSTEM EVENT
+	    console.log(["system","display","responses",true])
+	    return;
+	});
+
+	row.append("div")
+		.attr("class","lead col-sm-12 no-padding-left")
+		.html("Répondez à cette question");
+
+	var author_input=row.append("div")
+			.attr("class","user-name form-group")
+		.append("div")
+			.attr("class","input-group");
+
+	author_input.append("div")
+		.attr("class","input-group-addon")
+		.html("Nom");
+
+	author_input.append("input")
+		.attr("type","text")
+		.attr("class","form-control")
+		.attr("id","r-author-name")
+		.attr("placeholder","Votre nom ou pseudonyme");
+
+	var response_form=row.append("div")
+			.attr("class","response-form");
+
+	response_form.append("textarea")
+		.attr("id","response-text")
+		.attr("class","form-control no-radius-bottom")
+		.attr("rows",3)
+		.attr("placeholder","Votre réponse")
+		.on("click",function(){
+			d3.event.stopPropagation();
+		});
+
+	response_form.append("button")
+		.attr("id","response-process")
+		.attr("class","btn btn-default btn-xs no-radius-top")
+		.html("Laissez votre résponse")
+		.on("click",function(){
+			d3.event.stopPropagation();
+
+			if($("#response-text").val()!==""){
+				var user_name=$("#r-author-name").val();
+				//user_name=user_name.replace(/\s/g, '');
+				if(user_name.length===0){
+					user_name="Anonyme";
+				}
+			    // TRACE USER EVENT
+			    console.log(["user","click","submit-response","["+[getVIEW(),user_name,$("#response-text").val(),"question-"+id]+"]"])
+
+				$.ajax({
+					type: "POST",
+					url: "question_system/responses.php",
+					data: {q_id:id,response:$("#response-text").val(),author:user_name,action:"post_response"}
+				})
+				.done(function(txt){
+		        	// TRACE SYSTEM EVENT
+		        	console.log(["system","post","response-form",true])
+					d3.select(".responses")
+						.html(txt);
+					$("#response-text").val("");
+					$("#r-author-name").val("");
+			       	// TRACE SYSTEM EVENT
+			        console.log(["system","clear","response-form",true])
+			        return;
+				});
+			};
+
+			d3.select(".each-question.selected .question-stats .responses-count .large-num")
+				.html(function(){
+					var num=d3.select(this).html();
+					// TRACE SYSTEM EVENT
+					console.log(["system","update","question-response-num","["+num+",question-"+id+"]"])
+					return parseInt(num)+1;
+				});
+		});
+
+	d3.selectAll(".r-sort")
+		.on("mouseup",function(){
+			var _sort = d3.select(this).attr("id");
+			d3.selectAll(".r-sort")
+				.attr("disabled",null);
+			d3.select(this)
+				.attr("disabled","disabled");
+
+			var sort_id=this.id;
+			$.ajax({
+				type: "POST",
+				url: "question_system/responses.php",
+				data: {q_id:id,sort:_sort}
+			})
+			.done(function(txt){
+				d3.select(".responses")
+					.html(txt);
+				// TRACE SYSTEM EVENT
+				console.log(["system","post","sort-responses",true])
+				return;
+			});
+			return;
+		});
+    // TRACE SYSTEM EVENT
+    console.log(["system","display","response-system",true])
+	return;
+};
+
+function upVote(val,id,q_id,tot){
+	var newval=+val+1,
+		newtot=+tot+1;
+    // TRACE USER EVENT
+    console.log(["user","click","upvote","["+[getVIEW(),"response-"+id,newval,"question-"+q_id]+"]"])
+
+	$.ajax({
+		type:"POST",
+		url:"question_system/responses.php",
+		data:{q_id:q_id,id:id,vote:newval,total:newtot,action: "post_vote" }
+	})
+	.done(function(txt){
+		d3.select(".responses")
+			.html(txt);
+		// TRACE SYSTEM EVENT
+		console.log(["system","post","upvote",true])
+		return;
+	});
+
+	d3.select(".each-question.selected .question-stats .votes-count .large-num")
+		.html(function(){
+			var num=d3.select(this).html();
+			// TRACE SYSTEM EVENT
+			console.log(["system","update","vote-num","["+[(+num+1),"response-"+id]+"]"])
+			return parseInt(num)+1;
+		});
+	return;
+};
+
+function downVote(val,id,q_id,tot){
+	var newval=+val-1,
+		newtot=+tot+1;
+    // TRACE USER EVENT
+    console.log(["user","click","downvote","["+[getVIEW(),"response"+id,newval,"question-"+q_id]+"]"])
+	$.ajax({
+		type:"POST",
+		url:"question_system/responses.php",
+		data:{q_id:q_id,id:id,vote:newval,total:newtot,action:"post_vote"}
+	})
+	.done(function(txt){
+		d3.select(".responses")
+			.html(txt);
+		// TRACE SYSTEM EVENT
+		console.log(["system","post","downvote",true])
+		return;
+	});
+
+	d3.select(".each-question.selected .question-stats .votes-count .large-num")
+		.html(function(){
+			var num = d3.select(this).html();
+			// TRACE SYSTEM EVENT
+			console.log(["system","update","vote-num","["+[(+num+1),"response-"+id]+"]"])
+			return parseInt(num)+1;
+		});
+	return;
+};

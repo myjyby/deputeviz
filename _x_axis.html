@@ -1,0 +1,446 @@
+<ul class="dropdown-menu dropdown-menu-x-axis hide" role="menu" aria-labelledby="dropdownMenu" id="x-range-indicators">
+  <li role="presentation" class="drop-list-padding droplist-action-title"><strong>Encodez l’axe horizontal</strong></li>
+  <li class="x-range selected" data-d="null">
+    <a>Aucun encodage</a>
+  </li>
+
+  <li class="divider"></li>
+  <li role="presentation" class="dropdown-header">Activité à l’Assemblée*</li>
+  <li class="x-range" data-d="semaines_presence">
+    <a>Nombre de semaines d’activité</a>
+  </li>
+  <li class="x-range s-scale" data-d="mandats">
+    <a>Nombre de mandats</a>
+  </li>
+  <li class="x-range s-scale" data-d="rapports">
+    <a>Nombre de rapports écrits</a>
+  </li>
+
+  <!-- SUBMENU -->
+  <li class="dropdown-submenu">
+    <a tabindex="-1" class="grayed more-data submenu-right"><small>Plus de données&nbsp;</small></a>
+      <ul class="dropdown-menu s-drpd dropdown-menu-right">
+        <li role="presentation" class="dropdown-header">Amendements</li>
+        <li class="x-range s-scale" data-d="amendements" data-sd="adoptes">
+          <a>Nombre d’amendements adoptés</a>
+        </li>
+        <li class="x-range s-scale" data-d="amendements" data-sd="signes">
+          <a>Nombre d’amendements signés</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">En commission</li>
+        <li class="x-range s-scale" data-d="en_commission" data-sd="presences">
+          <a>Nombre de présences en commission</a>
+        </li>
+        <li class="x-range s-scale" data-d="en_commission" data-sd="interventions">
+          <a>Nombre d’interventions en commission</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Dans l’hémicycle</li>
+        <li class="x-range s-scale" data-d="interventions" data-sd="longues">
+          <a>Nombre d’interventions longues</a>
+        </li>
+        <li class="x-range s-scale" data-d="interventions" data-sd="courtes">
+          <a>Nomnbre d’interventions courtes</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Propositions</li>
+        <li class="x-range s-scale" data-d="propositions" data-sd="ecrites">
+          <a>Nombre de propositions écrites</a>
+        </li>
+        <li class="x-range s-scale" data-d="propositions" data-sd="signees">
+          <a>Nombre de propositions signées</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Questions</li>
+        <li class="x-range s-scale" data-d="questions" data-sd="ecrites">
+          <a>Nombre de questions écrites</a>
+        </li>
+        <li class="x-range s-scale" data-d="questions" data-sd="orales">
+          <a>Nombre de questions orales</a>
+        </li>
+        <li class="divider"></li>
+        <li class="drop-list-padding">
+          <small><a href="http://www.nosdeputes.fr/synthese" target="_blank">Données de nosdeputes.fr</a></small>
+        </li>
+      </ul>
+  </li>
+
+  <li class="drop-list-padding">
+    <small class="border-top">* sur les 12 derniers mois</small>
+  </li>
+
+  <li class="divider"></li>
+  <li role="presentation" class="dropdown-header">Données électorales*</li>
+  <li class="x-range" data-d="votes" data-sd="inscrits" data-ssd="nombre">
+    <a>Nombre d’inscrits sur listes électorales</a>
+  </li>
+
+  <!-- SUBMENU -->
+  <li class="dropdown-submenu">
+    <a tabindex="-1" class="grayed more-data submenu-right"><small>Plus de données&nbsp;</small></a>
+      <ul class="dropdown-menu s-drpd dropdown-menu-right">
+        <li role="presentation" class="dropdown-header">Général</li>
+        <li class="x-range s-scale" data-d="votes" data-sd="abstentions" data-ssd="nombre">
+          <a>Nombre d’abstentionnistes</a>
+        </li>
+        <li class="x-range s-scale" data-d="votes" data-sd="abstentions" data-ssd="ins_perc">
+          <a>Pourcentage d’abstentionnistes par rapport au nombre d’inscrits</a>
+        </li>
+        <li class="x-range s-scale" data-d="votes" data-sd="votants" data-ssd="nombre">
+          <a>Nombre de votants</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="votants" data-ssd="ins_perc">
+          <a>Pourcentage de votants par rapport au nombre d’inscrits</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Votes</li>
+       <li class="x-range s-scale" data-d="votes" data-sd="blanc" data-ssd="nombre">
+          <a>Nombre de votes blancs ou nuls</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="blanc" data-ssd="ins_perc">
+          <a>Pourcentage de votes blancs ou nuls par rapport au nombre d’inscrits</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="blanc" data-ssd="vot_perc">
+          <a>Pourcentage de votes blancs ou nuls par rapport au nombre de votants</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="exprimes" data-ssd="nombre">
+          <a>Nombre de votes exprimés</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="exprimes" data-ssd="ins_perc">
+          <a>Pourcentage de votes exprimés par rapport au nombre d’inscrits</a>
+        </li>
+       <li class="x-range s-scale" data-d="votes" data-sd="exprimes" data-ssd="vot_perc">
+          <a>Pourcentage de votes exprimés par rapport au nombre de votants</a>
+        </li>
+        <li class="divider"></li>
+        <li role="presentation" class="dropdown-header">Résultats</li>
+        <li class="x-range s-scale" data-d="votes" data-sd="elu" data-ssd="nombre">
+          <a>Nombre de votes en faveur de l’élu(e)</a>
+        </li>
+        <li class="x-range s-scale" data-d="votes" data-sd="elu" data-ssd="ins_perc">
+          <a>Pourcentage de votes exprimés en faveur de l’élu(e) par rapport au nombre d’inscrits</a>
+        </li>
+        <li class="x-range s-scale" data-d="votes" data-sd="elu" data-ssd="vot_perc">
+          <a>Pourcentage de votes exprimés en faveur de l’élu(e) par rapport au nombre de votants</a>
+        </li>
+        <li class="divider"></li>
+        <li class="drop-list-padding">
+          <small><a href="http://www.interieur.gouv.fr/Elections/Les-resultats/Legislatives/elecresult__LG2012/(path)/LG2012/index.html" target="_blank">Données du ministère de l’intérieur</a></small>
+        </li>
+      </ul>
+  </li>
+  <li class="drop-list-padding">
+    <small class="border-top">* par circonsription (2012)</small>
+  </li>
+
+
+  <li class="divider"></li>            
+  <li role="presentation" class="dropdown-header">Données démographiques*</li>
+  <li class="x-range" data-d="demographics" data-sd="population">
+    <a>Population totale</a>
+  </li>
+
+  <!-- SUBMENU -->
+  <li class="dropdown-submenu">
+    <a tabindex="-1" class="grayed more-data submenu-right"><small>Plus de données&nbsp;</small></a>
+      <ul class="dropdown-menu s-drpd dropdown-menu-right large-submenu">
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Tranches d’âges (1)&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_0_2">
+              <a>Population de 0 à 2 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_3_5">
+              <a>Population de 3 à 5 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_6_10">
+              <a>Population de 6 à 10 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_11_17">
+              <a>Population de 11 à 17 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_18_24">
+              <a>Population de 18 à 24 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_25_39">
+              <a>Population de 25 à 39 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_40_54">
+              <a>Population de 40 à 54 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_55_64">
+              <a>Population de 55 à 64 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_65_79">
+              <a>Population de 65 à 79 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_80">
+              <a>Population de 80 ans et plus</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Tranches d’âges (2)&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_0_19">
+              <a>Population de 0 à 19 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_20_64">
+              <a>Population de 20 à 64 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_65">
+              <a>Population de 65 ans et plus</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Tranches d’âges (2) par sexe&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li role="presentation" class="dropdown-header">Hommes</li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_hommes">
+              <a>Total des hommes</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_hommes_0_19">
+              <a>Hommes de 0 à 19 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_hommes_20_64">
+              <a>Hommes de 20 à 64 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_hommes_65">
+              <a>Hommes de 65 ans et plus</a>
+            </li>
+            <li class="divider"></li>
+
+            <li role="presentation" class="dropdown-header">Femmes</li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_femmes">
+              <a>Total des femmes</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_femmes_0_19">
+              <a>Femmes de 0 à 19 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_femmes_20_64">
+              <a>Femmes de 20 à 64 ans</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_femmes_65">
+              <a>Femmes de 65 ans et plus</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Immigration&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_francaise">
+              <a>Population française</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_etrangere">
+              <a>Population étrangère</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Emploi&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15">
+              <a>Population de 15 ans et plus</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_agriculteurs">
+              <a>Population de 15 ans et plus&thinsp;: agriculteurs</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_artisans">
+              <a>Population de 15 ans et plus&thinsp;: artisans, commerçants et chefs d’entreprises</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_cadres">
+              <a>Population de 15 ans et plus&thinsp;: cadres et professions intellectuelles supérieures</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_professions_intermediaires">
+              <a>Population de 15 ans et plus&thinsp;: professions intermédiaires</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_employes">
+              <a>Population de 15 ans et plus&thinsp;: employés</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_ovriers">
+              <a>Population de 15 ans et plus&thinsp;: ouvriers</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_retraites">
+              <a>Population de 15 ans et plus&thinsp;: retraités</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_autres">
+              <a>Population de 15 ans et plus&thinsp;: autres</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Emploi par sexe&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li role="presentation" class="dropdown-header">Hommes</li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes">
+              <a>Hommes de 15 ans et plus</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_agriculteurs">
+              <a>Hommes de 15 ans et plus&thinsp;: agriculteurs</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_artisans">
+              <a>Hommes de 15 ans et plus&thinsp;: artisans, commerçants et chefs d’entreprises</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_cadres">
+              <a>Hommes de 15 ans et plus&thinsp;: cadres et professions intellectuelles supérieures</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_professions_intermediaires">
+              <a>Hommes de 15 ans et plus&thinsp;: professions intermédiaires</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_employes">
+              <a>Hommes de 15 ans et plus&thinsp;: employés</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_ouvirers">
+              <a>Hommes de 15 ans et plus&thinsp;: ouvriers</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_retraites">
+              <a>Hommes de 15 ans et plus&thinsp;: retraités</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_hommes_autres">
+              <a>Hommes de 15 ans et plus&thinsp;: autres</a>
+            </li>
+
+            <li class="divider"></li>
+
+            <li role="presentation" class="dropdown-header">Femmes</li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes">
+              <a>Femmes de 15 ans et plus</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_agriculteurs">
+              <a>Femmes de 15 ans et plus&thinsp;: agriculteurs</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_artisans">
+              <a>Femmes de 15 ans et plus&thinsp;: artisans, commerçants et chefs d’entreprises</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_cadres">
+              <a>Femmes de 15 ans et plus&thinsp;: cadres et professions intellectuelles supérieures</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_professions_intermediaires">
+              <a>Femmes de 15 ans et plus&thinsp;: professions intermédiaires</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_employes">
+              <a>Femmes de 15 ans et plus&thinsp;: employés</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_ouvriers">
+              <a>Femmes de 15 ans et plus&thinsp;: ouvriers</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_retraites">
+              <a>Femmes de 15 ans et plus&thinsp;: retraités</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_15_femmes_autres">
+              <a>Femmes de 15 ans et plus&thinsp;: autres</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Logement&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="logements">
+              <a>Nombre de logements</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="residences_principales">
+              <a>Nombre de résidences principales</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- SUB-SUBMENU -->
+        <li class="dropdown-submenu dropup">
+          <a tabindex="-1" class="grayed more-data submenu-right"><small>Ménages&nbsp;</small></a>
+          <ul class="dropdown-menu s-drpd dropdown-menu-right ss-drpd dropdown-menu-right">
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_menages">
+              <a>Population des ménages</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_menages_avec_famille">
+              <a>Population des ménages: familles</a>
+            </li>
+            <li class="x-range s-scale ss-scale" data-d="demographics" data-sd="population_meanges_personnes_seules">
+              <a>Population des ménages: personnes seules</a>
+            </li>
+          </ul>
+        </li>
+
+
+
+        <!--<li class="x-range s-scale" data-v="_vieuxCount" data-d="_vieux" data-i="departement">
+          <a>Indice de vieillissement du département*</a>
+        </li>
+
+        <li class="drop-list-padding">
+          <small class="border-top">* 65 ans et plus / 100 personnes (2012)</small>
+        </li>
+        <li class="drop-list-padding">
+          <small class="border-top">* par circonsription</small>
+        </li>-->
+        <li class="divider"></li>
+        <li class="drop-list-padding">
+          <small><a href="http://www.insee.fr/fr/themes/detail.asp?reg_id=0&ref_id=circo_leg-2012&page=donnees-detaillees/circo_leg/circo_leg-2012/" target="_blank">Données de l’Insee</a></small>
+        </li>
+      </ul>
+  </li>
+  <li class="drop-list-padding">
+    <small class="border-top">* par circonsription (2008)</small>
+  </li>
+
+  <li class="divider"></li>
+  <li role="presentation" class="dropdown-header">Données économiques*</li>
+  <li class="x-range" data-d="recettes" data-sd="total_millions">
+    <a>Recettes totales en M€</a>
+  </li>
+
+  <!-- SUBMENU -->
+  <li class="dropdown-submenu dropup">
+    <a tabindex="-1" class="grayed more-data submenu-right"><small>Plus de données&nbsp;</small></a>
+      <ul class="dropdown-menu s-drpd dropdown-menu-right">
+
+        <li class="x-range s-scale" data-d="recettes" data-sd="total_par_habitant">
+          <a>Recettes totales par habitant*</a>
+        </li>
+        <li class="x-range s-scale" data-d="recettes" data-sd="fonctionnement_millions">
+          <a>Recettes de fonctionnement en M€*</a>
+        </li>
+        <li class="x-range s-scale" data-d="recettes" data-sd="fonctionnement_par_habitant">
+          <a>Recettes de fonctionnement par habitant*</a>
+        </li>
+        <li class="x-range s-scale" data-d="recettes" data-sd="investissement_millions">
+          <a>Recettes des investissements en M€*</a>
+        </li>
+        <li class="x-range s-scale" data-d="recettes" data-sd="investissement_par_habitant">
+          <a>Recettes des investissements par habitant*</a>
+        </li>
+        <li class="drop-list-padding">
+          <small class="border-top">* hors gestion active de la dette</small>
+        </li>
+        <!--<li class="divider"></li>
+        <li class="x-range s-scale" data-v="_chomageCount" data-d="_chomage_2012" data-i="departement">
+          <a>Taux de chômage&#9768;</a>
+        </li>
+        <li class="drop-list-padding">
+          <small class="border-top">&#9768; catégorie A au 2è trimestre 2012</small>
+        </li>-->
+        <li class="divider"></li>
+        <li class="drop-list-padding">
+          <small><a href="http://www.ecosante.fr/index2.php?base=DEPA&langh=FRA&langs=FRA&sessionid=" target="_blank">Données de ecosante.fr</a></small>
+        </li>
+      </ul>
+  </li>
+  <li class="drop-list-padding">
+    <small class="border-top">* par département (2013)</small>
+  </li>
+</ul>

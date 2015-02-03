@@ -1,0 +1,34 @@
+<?php
+	include_once("connect.php");
+
+	function getQCount($cID){
+		$info = "";
+		$sql = mysql_query("SELECT * FROM questions WHERE c_id = '". $cID ."'") or die(mysql_error());
+		if(mysql_num_rows($sql) == 0){
+			$info = "Il n’y a pas de questions pour cette vue. Posez la première.";
+		}else{
+			$question = "";
+			$responses = "";
+			if(mysql_num_rows($sql) == 1){
+				$question = "question";
+				$responses = "Trouvez-lui une réponse.";
+			}else{
+				$question = "questions";
+				$responses = "Trouvez-leur des réponses.";
+			}
+			$info = "Il y a ". mysql_num_rows($sql) ." ". $question ." pour cette vue.<br />". $responses;
+		}
+
+		return $info;
+	};
+
+	$cID = "";
+	if(isset($_POST['c_id'])){
+		$cID = $_POST['c_id'];
+	}else{
+		$cID = 0;
+	}
+
+	echo getQCount($cID);
+
+?>
